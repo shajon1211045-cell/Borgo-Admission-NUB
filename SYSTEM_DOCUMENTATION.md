@@ -1,6 +1,7 @@
 # Northern University Bangladesh - Complete Admission Management System Documentation
 
 ## Table of Contents
+
 1. [System Overview](#system-overview)
 2. [Architecture](#architecture)
 3. [Technology Stack](#technology-stack)
@@ -24,6 +25,7 @@
 The Northern University Bangladesh Admission Management System is a comprehensive full-stack web application designed to manage the entire student admission lifecycle from application submission to student enrollment and academic record management.
 
 ### Purpose
+
 - Streamline the admission process for applicants
 - Provide robust tools for admission officers to manage applications
 - Enable finance officers to track payments and bills
@@ -31,6 +33,7 @@ The Northern University Bangladesh Admission Management System is a comprehensiv
 - Generate comprehensive reports and analytics
 
 ### Key Capabilities
+
 - Online application submission with document uploads
 - Multi-step application form with validation
 - Payment processing integration (bKash, Bank Transfer)
@@ -85,6 +88,7 @@ External Integrations:
 ### Application Flow
 
 **Applicant Flow:**
+
 1. Visit home page → Program selection
 2. Fill personal information
 3. Enter academic history
@@ -95,6 +99,7 @@ External Integrations:
 8. Receive admission decision
 
 **Admin Flow:**
+
 1. Login to admin portal
 2. View all applications with filters
 3. Review individual applications
@@ -110,6 +115,7 @@ External Integrations:
 ## Technology Stack
 
 ### Frontend
+
 - **Framework**: React 18.3.1
 - **Routing**: React Router 6 (SPA mode)
 - **Build Tool**: Vite 6.2.2
@@ -124,6 +130,7 @@ External Integrations:
 - **Animations**: Framer Motion
 
 ### Backend
+
 - **Runtime**: Node.js
 - **Framework**: Express 4.18.2
 - **Language**: TypeScript (ESM)
@@ -136,12 +143,14 @@ External Integrations:
 - **Environment**: dotenv 17.2.0
 
 ### Development Tools
+
 - **Testing**: Vitest 3.1.4
 - **Formatter**: Prettier 3.5.3
 - **Bundler**: Vite with SWC
 - **Type Checking**: TypeScript compiler
 
 ### Deployment
+
 - **Frontend**: Netlify, Vercel, or any static hosting
 - **Backend**: Node.js server, Docker, or serverless
 - **Database**: Neon (Postgres), Supabase, or self-hosted
@@ -153,6 +162,7 @@ External Integrations:
 ### Core Tables (50+ tables)
 
 #### 1. **users**
+
 ```sql
 CREATE TABLE users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,11 +181,13 @@ CREATE TABLE users (
 ```
 
 **Purpose**: Store both applicant and admin user credentials
-**Key Fields**: 
+**Key Fields**:
+
 - `type`: 'applicant' or 'admin'
 - `university_id`: Auto-generated for students
 
 #### 2. **applications / applications_v2**
+
 ```sql
 CREATE TABLE applications_v2 (
   application_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -212,6 +224,7 @@ CREATE TABLE applications_v2 (
 **Payment Statuses**: Unpaid, Partial, Paid
 
 #### 3. **students**
+
 ```sql
 CREATE TABLE students (
   student_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -232,10 +245,12 @@ CREATE TABLE students (
 
 **Purpose**: Converted applications to enrolled students
 **Key Fields**:
+
 - `university_id`: Format like NU24CSE001
 - `ugc_id`: UGC standard ID
 
 #### 4. **programs**
+
 ```sql
 CREATE TABLE programs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -254,6 +269,7 @@ CREATE TABLE programs (
 **Examples**: BCS, MBA, LLB, etc.
 
 #### 5. **departments**
+
 ```sql
 CREATE TABLE departments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -266,6 +282,7 @@ CREATE TABLE departments (
 ```
 
 #### 6. **student_bills**
+
 ```sql
 CREATE TABLE student_bills (
   bill_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -284,6 +301,7 @@ CREATE TABLE student_bills (
 **Purpose**: Track all student financial obligations
 
 #### 7. **waivers / waiver_policies**
+
 ```sql
 CREATE TABLE waiver_policies (
   waiver_policy_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -310,6 +328,7 @@ CREATE TABLE waiver_assignments (
 **Purpose**: Fee waiver definitions and assignments
 
 #### 8. **scholarships**
+
 ```sql
 CREATE TABLE scholarships (
   scholarship_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -325,6 +344,7 @@ CREATE TABLE scholarships (
 ```
 
 #### 9. **academic_history**
+
 ```sql
 CREATE TABLE academic_history (
   academic_history_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -342,6 +362,7 @@ CREATE TABLE academic_history (
 **Purpose**: Store applicant educational background
 
 #### 10. **credit_transfer_records**
+
 ```sql
 CREATE TABLE credit_transfer_records (
   transfer_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -358,6 +379,7 @@ CREATE TABLE credit_transfer_records (
 ```
 
 #### 11. **documents**
+
 ```sql
 CREATE TABLE documents (
   document_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -374,6 +396,7 @@ CREATE TABLE documents (
 ```
 
 #### 12. **admission_settings**
+
 ```sql
 CREATE TABLE admission_settings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -390,6 +413,7 @@ CREATE TABLE admission_settings (
 ```
 
 #### 13. **payment_methods**
+
 ```sql
 CREATE TABLE payment_methods (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -404,6 +428,7 @@ CREATE TABLE payment_methods (
 ```
 
 #### 14. **employee_referrers**
+
 ```sql
 CREATE TABLE employee_referrers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -418,6 +443,7 @@ CREATE TABLE employee_referrers (
 ```
 
 #### 15. **program_courses**
+
 ```sql
 CREATE TABLE program_courses (
   program_course_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -432,6 +458,7 @@ CREATE TABLE program_courses (
 ```
 
 #### 16. **student_course_offerings**
+
 ```sql
 CREATE TABLE student_course_offerings (
   offering_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -444,6 +471,7 @@ CREATE TABLE student_course_offerings (
 ```
 
 #### 17. **sms_queue**
+
 ```sql
 CREATE TABLE sms_queue (
   sms_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -458,6 +486,7 @@ CREATE TABLE sms_queue (
 ```
 
 #### 18. **mock_emails**
+
 ```sql
 CREATE TABLE mock_emails (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -471,6 +500,7 @@ CREATE TABLE mock_emails (
 ```
 
 #### 19. **export_jobs**
+
 ```sql
 CREATE TABLE export_jobs (
   job_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -486,6 +516,7 @@ CREATE TABLE export_jobs (
 ```
 
 #### 20. **audit_trail**
+
 ```sql
 CREATE TABLE audit_trail (
   audit_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -501,6 +532,7 @@ CREATE TABLE audit_trail (
 ```
 
 #### 21. **visitors_log**
+
 ```sql
 CREATE TABLE visitors_log (
   visit_log_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -518,6 +550,7 @@ CREATE TABLE visitors_log (
 ```
 
 #### 22. **roles & permissions (RBAC)**
+
 ```sql
 CREATE TABLE roles (
   role_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -573,18 +606,19 @@ CREATE TABLE user_roles (
 ## API Endpoints
 
 ### Base URL
+
 - Development: `http://localhost:8080/api`
 - Production: `https://yourdomain.com/api`
 
 ### Authentication Endpoints (`/api/auth`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/login` | User login (applicant/admin) | No |
-| POST | `/api/auth/logout` | User logout | Yes |
-| GET | `/api/auth/me` | Get current user info | Yes |
-| POST | `/api/auth/register-applicant` | Register new applicant | No |
-| POST | `/api/auth/change-password` | Change password | Yes |
+| Method | Endpoint                       | Description                  | Auth Required |
+| ------ | ------------------------------ | ---------------------------- | ------------- |
+| POST   | `/api/auth/login`              | User login (applicant/admin) | No            |
+| POST   | `/api/auth/logout`             | User logout                  | Yes           |
+| GET    | `/api/auth/me`                 | Get current user info        | Yes           |
+| POST   | `/api/auth/register-applicant` | Register new applicant       | No            |
+| POST   | `/api/auth/change-password`    | Change password              | Yes           |
 
 **Request/Response Examples:**
 
@@ -611,16 +645,17 @@ Response: {
 
 ### Application Endpoints (`/api/applications`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/applications` | Get all applications (paginated) | Admin |
-| GET | `/api/applications/:id` | Get single application | Admin/Owner |
-| POST | `/api/applications` | Create new application | No |
-| PATCH | `/api/applications/:id/status` | Update status | Admin |
-| POST | `/api/applications/:id/generate-ids` | Generate IDs | Admin |
-| GET | `/api/applications/stats/dashboard` | Dashboard stats | Admin |
+| Method | Endpoint                             | Description                      | Auth Required |
+| ------ | ------------------------------------ | -------------------------------- | ------------- |
+| GET    | `/api/applications`                  | Get all applications (paginated) | Admin         |
+| GET    | `/api/applications/:id`              | Get single application           | Admin/Owner   |
+| POST   | `/api/applications`                  | Create new application           | No            |
+| PATCH  | `/api/applications/:id/status`       | Update status                    | Admin         |
+| POST   | `/api/applications/:id/generate-ids` | Generate IDs                     | Admin         |
+| GET    | `/api/applications/stats/dashboard`  | Dashboard stats                  | Admin         |
 
 **Query Parameters for GET /api/applications:**
+
 - `page`: Page number (default: 1)
 - `limit`: Items per page (default: 20)
 - `search`: Search by name/email/tracking ID
@@ -632,125 +667,126 @@ Response: {
 
 ### Program Endpoints (`/api/programs`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/programs` | Get all programs | No |
-| GET | `/api/programs/:code` | Get program details | No |
-| GET | `/api/programs/departments` | Get all departments | No |
-| POST | `/api/programs/calculate-cost` | Calculate fees with waivers | No |
-| POST | `/api/programs` | Create program | Admin |
-| PUT | `/api/programs/:code` | Update program | Admin |
-| DELETE | `/api/programs/:code` | Delete program | Admin |
+| Method | Endpoint                       | Description                 | Auth Required |
+| ------ | ------------------------------ | --------------------------- | ------------- |
+| GET    | `/api/programs`                | Get all programs            | No            |
+| GET    | `/api/programs/:code`          | Get program details         | No            |
+| GET    | `/api/programs/departments`    | Get all departments         | No            |
+| POST   | `/api/programs/calculate-cost` | Calculate fees with waivers | No            |
+| POST   | `/api/programs`                | Create program              | Admin         |
+| PUT    | `/api/programs/:code`          | Update program              | Admin         |
+| DELETE | `/api/programs/:code`          | Delete program              | Admin         |
 
 ### Student Endpoints (`/api/students`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/students` | Get all students | Admin |
-| GET | `/api/students/:id` | Get student details | Admin |
-| POST | `/api/students` | Create student record | Admin |
-| PUT | `/api/students/:id` | Update student | Admin |
-| POST | `/api/students/:id/generate-id` | Generate student ID | Admin |
+| Method | Endpoint                        | Description           | Auth Required |
+| ------ | ------------------------------- | --------------------- | ------------- |
+| GET    | `/api/students`                 | Get all students      | Admin         |
+| GET    | `/api/students/:id`             | Get student details   | Admin         |
+| POST   | `/api/students`                 | Create student record | Admin         |
+| PUT    | `/api/students/:id`             | Update student        | Admin         |
+| POST   | `/api/students/:id/generate-id` | Generate student ID   | Admin         |
 
 ### Finance Endpoints (`/api/finance`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/finance/bills` | Get student bills | Admin |
-| POST | `/api/finance/bills` | Create bill | Admin |
-| PATCH | `/api/finance/bills/:id` | Update bill status | Admin |
-| GET | `/api/finance/bills/:id` | Get bill details | Admin/Owner |
+| Method | Endpoint                 | Description        | Auth Required |
+| ------ | ------------------------ | ------------------ | ------------- |
+| GET    | `/api/finance/bills`     | Get student bills  | Admin         |
+| POST   | `/api/finance/bills`     | Create bill        | Admin         |
+| PATCH  | `/api/finance/bills/:id` | Update bill status | Admin         |
+| GET    | `/api/finance/bills/:id` | Get bill details   | Admin/Owner   |
 
 ### Academic Endpoints (`/api/academic`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/academic/courses` | Get all courses | Admin |
-| POST | `/api/academic/credit-transfer` | Calculate credit transfer | Admin |
-| POST | `/api/academic/offer-courses` | Offer courses to student | Admin |
-| GET | `/api/academic/syllabus` | Get program syllabus | No |
+| Method | Endpoint                        | Description               | Auth Required |
+| ------ | ------------------------------- | ------------------------- | ------------- |
+| GET    | `/api/academic/courses`         | Get all courses           | Admin         |
+| POST   | `/api/academic/credit-transfer` | Calculate credit transfer | Admin         |
+| POST   | `/api/academic/offer-courses`   | Offer courses to student  | Admin         |
+| GET    | `/api/academic/syllabus`        | Get program syllabus      | No            |
 
 ### Report Endpoints (`/api/reports`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/reports/admissions` | Admission report | Admin |
-| GET | `/api/reports/financial` | Financial report | Admin |
-| GET | `/api/reports/departmental` | Departmental stats | Admin |
-| POST | `/api/reports/export` | Queue export job | Admin |
-| GET | `/api/reports/export/:jobId` | Get export status | Admin |
+| Method | Endpoint                     | Description        | Auth Required |
+| ------ | ---------------------------- | ------------------ | ------------- |
+| GET    | `/api/reports/admissions`    | Admission report   | Admin         |
+| GET    | `/api/reports/financial`     | Financial report   | Admin         |
+| GET    | `/api/reports/departmental`  | Departmental stats | Admin         |
+| POST   | `/api/reports/export`        | Queue export job   | Admin         |
+| GET    | `/api/reports/export/:jobId` | Get export status  | Admin         |
 
 ### PDF Endpoints (`/api/pdf`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/pdf/admit-card/:id` | Generate admit card | Public/Admin |
-| GET | `/api/pdf/money-receipt` | Generate money receipt | Admin |
-| GET | `/api/pdf/id-card/:studentId` | Generate ID card | Admin |
+| Method | Endpoint                      | Description            | Auth Required |
+| ------ | ----------------------------- | ---------------------- | ------------- |
+| GET    | `/api/pdf/admit-card/:id`     | Generate admit card    | Public/Admin  |
+| GET    | `/api/pdf/money-receipt`      | Generate money receipt | Admin         |
+| GET    | `/api/pdf/id-card/:studentId` | Generate ID card       | Admin         |
 
 ### Messaging Endpoints (`/api/messaging`, `/api/sms`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/messaging/send-email` | Send email | Admin |
-| GET | `/api/messaging/templates` | Get email templates | Admin |
-| POST | `/api/sms/send` | Send SMS | Admin |
-| GET | `/api/sms/queue` | Get SMS queue | Admin |
+| Method | Endpoint                    | Description         | Auth Required |
+| ------ | --------------------------- | ------------------- | ------------- |
+| POST   | `/api/messaging/send-email` | Send email          | Admin         |
+| GET    | `/api/messaging/templates`  | Get email templates | Admin         |
+| POST   | `/api/sms/send`             | Send SMS            | Admin         |
+| GET    | `/api/sms/queue`            | Get SMS queue       | Admin         |
 
 ### Dashboard Endpoints (`/api/dashboard`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/dashboard/stats` | Overall statistics | Admin |
-| GET | `/api/dashboard/kpi` | KPI metrics | Admin |
-| POST | `/api/dashboard/refresh-cache` | Refresh cached metrics | Admin |
+| Method | Endpoint                       | Description            | Auth Required |
+| ------ | ------------------------------ | ---------------------- | ------------- |
+| GET    | `/api/dashboard/stats`         | Overall statistics     | Admin         |
+| GET    | `/api/dashboard/kpi`           | KPI metrics            | Admin         |
+| POST   | `/api/dashboard/refresh-cache` | Refresh cached metrics | Admin         |
 
 ### Visitor/Lead Endpoints (`/api/visitors`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/visitors` | Get visitor logs | Admin |
-| POST | `/api/visitors` | Create visitor log | Admin |
-| PUT | `/api/visitors/:id` | Update visitor | Admin |
-| POST | `/api/visitors/:id/follow-up` | Add follow-up | Admin |
+| Method | Endpoint                      | Description        | Auth Required |
+| ------ | ----------------------------- | ------------------ | ------------- |
+| GET    | `/api/visitors`               | Get visitor logs   | Admin         |
+| POST   | `/api/visitors`               | Create visitor log | Admin         |
+| PUT    | `/api/visitors/:id`           | Update visitor     | Admin         |
+| POST   | `/api/visitors/:id/follow-up` | Add follow-up      | Admin         |
 
 ### Referrer Endpoints (`/api/referrers`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/referrers` | Get all referrers | Admin |
-| POST | `/api/referrers/validate` | Validate referrer ID | No |
-| GET | `/api/referrers/:id/stats` | Get referrer stats | Admin |
-| POST | `/api/referrals/requests` | Request referral approval | Admin |
+| Method | Endpoint                   | Description               | Auth Required |
+| ------ | -------------------------- | ------------------------- | ------------- |
+| GET    | `/api/referrers`           | Get all referrers         | Admin         |
+| POST   | `/api/referrers/validate`  | Validate referrer ID      | No            |
+| GET    | `/api/referrers/:id/stats` | Get referrer stats        | Admin         |
+| POST   | `/api/referrals/requests`  | Request referral approval | Admin         |
 
 ### Admin Settings Endpoints (`/api/admission-settings`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/admission-settings` | Get current settings | No |
-| PUT | `/api/admission-settings` | Update settings | Admin |
+| Method | Endpoint                  | Description          | Auth Required |
+| ------ | ------------------------- | -------------------- | ------------- |
+| GET    | `/api/admission-settings` | Get current settings | No            |
+| PUT    | `/api/admission-settings` | Update settings      | Admin         |
 
 ### Import/Export Endpoints (`/api/imports`, `/api/exports`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/imports/upload` | Upload CSV for import | Admin |
-| GET | `/api/imports/jobs` | Get import job status | Admin |
-| POST | `/api/exports/queue` | Queue export job | Admin |
-| GET | `/api/exports/download/:jobId` | Download export file | Admin |
+| Method | Endpoint                       | Description           | Auth Required |
+| ------ | ------------------------------ | --------------------- | ------------- |
+| POST   | `/api/imports/upload`          | Upload CSV for import | Admin         |
+| GET    | `/api/imports/jobs`            | Get import job status | Admin         |
+| POST   | `/api/exports/queue`           | Queue export job      | Admin         |
+| GET    | `/api/exports/download/:jobId` | Download export file  | Admin         |
 
 ### Webhook Endpoints (`/api/webhooks`)
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/webhooks/payments/bkash` | bKash payment webhook | No (verified) |
-| POST | `/api/webhooks/sms/:provider` | SMS delivery webhook | No (verified) |
+| Method | Endpoint                       | Description           | Auth Required |
+| ------ | ------------------------------ | --------------------- | ------------- |
+| POST   | `/api/webhooks/payments/bkash` | bKash payment webhook | No (verified) |
+| POST   | `/api/webhooks/sms/:provider`  | SMS delivery webhook  | No (verified) |
 
 ---
 
 ## Features & Modules
 
 ### 1. **Application Management**
+
 - Multi-step application form
 - Real-time form validation
 - Auto-save and resume
@@ -761,6 +797,7 @@ Response: {
 - Application tracking
 
 ### 2. **Admin Dashboard**
+
 - Real-time statistics (total applications, admissions, revenue)
 - Application list with advanced filters
 - Individual application review
@@ -769,6 +806,7 @@ Response: {
 - Search by name, email, tracking ID, university ID
 
 ### 3. **Student ID Generation**
+
 - University ID: Format `{PROGRAM}-{CAMPUS}{YEAR}{DEPT}{SERIAL}`
   - Example: `BCS-012401001`
 - UGC ID: Format `{UNIV}{FAC}{DISC}{LEVEL}{YEAR}{SERIAL}`
@@ -777,6 +815,7 @@ Response: {
 - Lock mechanism to prevent duplicates
 
 ### 4. **Finance Management**
+
 - Bill creation and tracking
 - Payment verification
 - Money receipt generation (PDF)
@@ -786,6 +825,7 @@ Response: {
 - Financial reports
 
 ### 5. **Credit Transfer System**
+
 - Automated credit equivalency calculation
 - Grade conversion from multiple scales (4.0, 5.0, 10.0, 100.0)
 - CGPA recalculation
@@ -793,6 +833,7 @@ Response: {
 - Credit transfer report generation
 
 ### 6. **Course Offering**
+
 - Program-wise course lists
 - Semester-based course offerings
 - Bulk course assignment to students
@@ -800,12 +841,14 @@ Response: {
 - Course load management
 
 ### 7. **Academic Management**
+
 - Program and department CRUD
 - Syllabus management (versioning)
 - Credit hour tracking
 - Grade point management
 
 ### 8. **Reporting & Analytics**
+
 - Admission reports (by program, campus, semester)
 - Financial reports (revenue, outstanding)
 - Departmental reports
@@ -814,6 +857,7 @@ Response: {
 - Scheduled report generation
 
 ### 9. **Messaging System**
+
 - Email templates management
 - SMS queue with retry logic
 - Bulk messaging
@@ -822,6 +866,7 @@ Response: {
 - Mock email outbox (development)
 
 ### 10. **Document Management**
+
 - Secure file upload
 - Document verification workflow
 - Virus scanning (planned)
@@ -829,6 +874,7 @@ Response: {
 - Document status tracking
 
 ### 11. **Visitor & Lead Management**
+
 - Visitor log entry
 - Lead source tracking
 - Follow-up scheduling
@@ -836,6 +882,7 @@ Response: {
 - Assignment to officers
 
 ### 12. **Permission & Access Control**
+
 - Role-based access (6 default roles)
 - Permission matrix
 - Dynamic permission assignment
@@ -843,6 +890,7 @@ Response: {
 - Session tracking
 
 ### 13. **Audit & Compliance**
+
 - Complete audit trail
 - Field-level change tracking
 - User action logging
@@ -850,6 +898,7 @@ Response: {
 - Change history viewer
 
 ### 14. **Settings & Configuration**
+
 - Admission settings (deadlines, fees)
 - Payment method configuration
 - Document requirements
@@ -858,6 +907,7 @@ Response: {
 - Scholarship definitions
 
 ### 15. **Import/Export**
+
 - Bulk application import (CSV)
 - Error reporting for imports
 - Queued export jobs
@@ -871,6 +921,7 @@ Response: {
 ### Role Hierarchy
 
 1. **Applicant**
+
    - Submit applications
    - View own application status
    - Upload documents
@@ -878,6 +929,7 @@ Response: {
    - Download admit card
 
 2. **Admission Officer**
+
    - View all applications
    - Approve/reject applications
    - Generate student IDs
@@ -885,6 +937,7 @@ Response: {
    - Send notifications
 
 3. **Finance Officer**
+
    - View financial data
    - Create bills
    - Verify payments
@@ -892,6 +945,7 @@ Response: {
    - Approve referral commissions
 
 4. **Registrar**
+
    - All admission officer permissions
    - Create students from applications
    - Offer courses
@@ -899,6 +953,7 @@ Response: {
    - Generate official documents
 
 5. **Fraud Analyst**
+
    - Flag suspicious applications
    - View audit trails
    - Document verification
@@ -932,22 +987,26 @@ Response: {
 ## Installation & Setup
 
 ### Prerequisites
+
 - Node.js 18+ and npm
 - Git
 - Modern browser (Chrome, Firefox, Safari, Edge)
 
 ### Step 1: Clone Repository
+
 ```bash
 git clone <repository-url>
 cd admission-system
 ```
 
 ### Step 2: Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### Step 3: Environment Configuration
+
 Create `.env` file in the root directory:
 
 ```env
@@ -994,25 +1053,30 @@ ADMIN_PASSWORD=admin123
 ```
 
 ### Step 4: Initialize Database
+
 ```bash
 npm run db:init
 ```
 
 This will:
+
 - Create SQLite database
 - Run all migrations
 - Seed sample data
 
 ### Step 5: Start Development Server
+
 ```bash
 npm run dev
 ```
 
 Application will be available at:
+
 - Frontend: http://localhost:8080
 - Backend API: http://localhost:8080/api
 
 ### Alternative: Run Separately
+
 ```bash
 # Terminal 1: Backend
 npm run dev:backend
@@ -1026,35 +1090,39 @@ npm run dev:frontend
 ## Configuration
 
 ### Database Configuration (`server/database/config.ts`)
+
 ```typescript
 export const dbConfig = {
-  path: process.env.DATABASE_PATH || './database.sqlite',
-  verbose: process.env.NODE_ENV === 'development'
+  path: process.env.DATABASE_PATH || "./database.sqlite",
+  verbose: process.env.NODE_ENV === "development",
 };
 ```
 
 ### JWT Configuration
+
 ```typescript
 export const jwtConfig = {
-  secret: process.env.JWT_SECRET || 'default-secret',
-  expiresIn: process.env.JWT_EXPIRY || '7d'
+  secret: process.env.JWT_SECRET || "default-secret",
+  expiresIn: process.env.JWT_EXPIRY || "7d",
 };
 ```
 
 ### File Upload Configuration
+
 ```typescript
 export const uploadConfig = {
-  directory: process.env.UPLOAD_DIR || './uploads',
+  directory: process.env.UPLOAD_DIR || "./uploads",
   maxSize: (process.env.MAX_FILE_SIZE_MB || 10) * 1024 * 1024,
-  allowedTypes: ['image/jpeg', 'image/png', 'application/pdf']
+  allowedTypes: ["image/jpeg", "image/png", "application/pdf"],
 };
 ```
 
 ### CORS Configuration
+
 ```typescript
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
-  credentials: true
+  origin: process.env.FRONTEND_URL || "*",
+  credentials: true,
 };
 ```
 
@@ -1065,6 +1133,7 @@ const corsOptions = {
 ### Frontend Deployment (Static Hosting)
 
 #### Option 1: Netlify
+
 ```bash
 # Build
 npm run build
@@ -1075,6 +1144,7 @@ netlify deploy --prod --dir=dist
 ```
 
 **Netlify Configuration (`netlify.toml`):**
+
 ```toml
 [build]
   command = "npm run build"
@@ -1087,6 +1157,7 @@ netlify deploy --prod --dir=dist
 ```
 
 #### Option 2: Vercel
+
 ```bash
 # Build
 npm run build
@@ -1097,12 +1168,14 @@ vercel --prod
 ```
 
 #### Option 3: Static Server (Nginx)
+
 ```bash
 npm run build
 # Copy dist/ folder to web server
 ```
 
 **Nginx Configuration:**
+
 ```nginx
 server {
   listen 80;
@@ -1128,6 +1201,7 @@ server {
 ### Backend Deployment
 
 #### Option 1: Node.js Server (PM2)
+
 ```bash
 # Install PM2
 npm install -g pm2
@@ -1139,6 +1213,7 @@ pm2 startup
 ```
 
 #### Option 2: Docker
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -1156,10 +1231,12 @@ docker run -p 3001:3001 --env-file .env admission-api
 ```
 
 #### Option 3: Serverless (AWS Lambda)
+
 Use `serverless-http` wrapper (already included):
+
 ```typescript
-import serverless from 'serverless-http';
-import { app } from './index';
+import serverless from "serverless-http";
+import { app } from "./index";
 
 export const handler = serverless(app);
 ```
@@ -1167,11 +1244,13 @@ export const handler = serverless(app);
 ### Database Migration (SQLite → PostgreSQL/Neon)
 
 1. **Export SQLite data:**
+
 ```bash
 sqlite3 database.sqlite .dump > dump.sql
 ```
 
 2. **Convert to PostgreSQL syntax:**
+
 ```bash
 # Replace AUTOINCREMENT with SERIAL
 # Replace DATETIME with TIMESTAMP
@@ -1179,16 +1258,18 @@ sqlite3 database.sqlite .dump > dump.sql
 ```
 
 3. **Import to PostgreSQL:**
+
 ```bash
 psql -h your-neon-host -U user -d database -f dump.sql
 ```
 
 4. **Update connection in code:**
+
 ```typescript
-import { Pool } from 'pg';
+import { Pool } from "pg";
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
 });
 ```
 
@@ -1288,29 +1369,34 @@ admission-system/
 ## Security
 
 ### Authentication
+
 - JWT-based token authentication
 - 7-day token expiry
 - Secure password hashing (bcrypt with 10 rounds)
 - Session tracking in database
 
 ### Authorization
+
 - Role-based access control (RBAC)
 - Permission checks on all protected routes
 - User-resource ownership validation
 
 ### Data Protection
+
 - SQL injection prevention (parameterized queries)
 - XSS protection (React auto-escaping)
 - CSRF protection (same-origin policy)
 - File upload validation (type, size, hash)
 
 ### API Security
+
 - Rate limiting (planned)
 - CORS configuration
 - Webhook signature verification
 - Input validation with Zod
 
 ### Best Practices
+
 - Environment variable management
 - Secrets not committed to repo
 - HTTPS in production
@@ -1322,6 +1408,7 @@ admission-system/
 ## Payment Integration
 
 ### Supported Gateways
+
 1. **bKash** (Mobile Banking)
 2. **Bank Transfer** (Manual verification)
 3. SSL Commerz (Ready for integration)
@@ -1329,6 +1416,7 @@ admission-system/
 ### Payment Flow
 
 #### bKash Integration
+
 1. User selects bKash payment
 2. Frontend calls `/api/payments/bkash/create`
 3. Backend creates payment with bKash API
@@ -1338,6 +1426,7 @@ admission-system/
 7. User redirected back with success/failure
 
 #### Bank Transfer
+
 1. Admin configures bank accounts
 2. User views bank details
 3. User makes manual transfer
@@ -1346,12 +1435,13 @@ admission-system/
 6. Officer updates payment status
 
 ### Webhook Security
+
 ```typescript
 const verifyBkashSignature = (payload: string, signature: string): boolean => {
   const hash = crypto
-    .createHmac('sha256', process.env.BKASH_APP_SECRET!)
+    .createHmac("sha256", process.env.BKASH_APP_SECRET!)
     .update(payload)
-    .digest('hex');
+    .digest("hex");
   return hash === signature;
 };
 ```
@@ -1361,18 +1451,21 @@ const verifyBkashSignature = (payload: string, signature: string): boolean => {
 ## Messaging System
 
 ### Email System
+
 - **Provider**: SendGrid / AWS SES
 - **Templates**: Stored in database
 - **Variables**: {{NAME}}, {{TRACKING_ID}}, {{PROGRAM}}, etc.
 - **Mock Mode**: Development emails stored in `mock_emails` table
 
 ### SMS System
+
 - **Provider**: Twilio / Nexmo
 - **Queue**: `sms_queue` table with retry logic
 - **Delivery Tracking**: Webhook updates from provider
 - **Bulk SMS**: Queue processing with rate limits
 
 ### Notification Types
+
 1. Application submitted
 2. Payment received
 3. Application approved
@@ -1386,17 +1479,20 @@ const verifyBkashSignature = (payload: string, signature: string): boolean => {
 ## Testing
 
 ### Unit Tests (Vitest)
+
 ```bash
 npm run test
 ```
 
 **Test Files:**
+
 - `client/lib/mockApi.spec.ts`
 - `client/lib/api.spec.ts`
 
 ### Manual Testing Checklist
 
 **Application Flow:**
+
 - [ ] Create application
 - [ ] Upload documents
 - [ ] Calculate fees
@@ -1406,6 +1502,7 @@ npm run test
 - [ ] View status
 
 **Admin Flow:**
+
 - [ ] Login as admin
 - [ ] View applications
 - [ ] Approve application
@@ -1415,6 +1512,7 @@ npm run test
 - [ ] Generate reports
 
 **Edge Cases:**
+
 - [ ] Duplicate email registration
 - [ ] Invalid referrer ID
 - [ ] File upload limits
@@ -1426,14 +1524,17 @@ npm run test
 ## Demo Credentials
 
 ### Applicant Portal
+
 - **University ID**: `NU24BCS001`
 - **Password**: `temp123456`
 
 ### Admin Portal
+
 - **Email**: `admin@nu.edu.bd`
 - **Password**: `admin123`
 
 ### Sample Referrer IDs
+
 - `EMP001` - John Doe (CSE Department)
 - `EMP002` - Jane Smith (BBA Department)
 
@@ -1442,6 +1543,7 @@ npm run test
 ## Support & Documentation
 
 ### Additional Resources
+
 - **API Documentation**: See `API_README.md`
 - **Backend Guide**: See `BACKEND_IMPLEMENTATION.md`
 - **Frontend Deployment**: See `FRONTEND_DEPLOYMENT.md`
@@ -1450,6 +1552,7 @@ npm run test
 ### Common Issues
 
 **Database locked error:**
+
 ```bash
 # Close all connections to database
 rm database.sqlite
@@ -1457,12 +1560,14 @@ npm run db:init
 ```
 
 **Port already in use:**
+
 ```bash
 # Change PORT in .env
 PORT=3002
 ```
 
 **Build errors:**
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
@@ -1474,6 +1579,7 @@ npm run build
 ## Production Checklist
 
 ### Before Deployment
+
 - [ ] Update JWT_SECRET to strong random string
 - [ ] Set NODE_ENV=production
 - [ ] Configure real payment gateway credentials
@@ -1490,6 +1596,7 @@ npm run build
 - [ ] Set up CI/CD pipeline
 
 ### Post-Deployment
+
 - [ ] Monitor error logs
 - [ ] Test payment webhooks
 - [ ] Verify email delivery
@@ -1514,6 +1621,7 @@ npm run build
 ## Appendix: Complete Technology Inventory
 
 ### Frontend Dependencies (60+)
+
 - React 18.3.1, React Router 6, TypeScript 5.5.3
 - Vite 6.2.2, TailwindCSS 3.4.11
 - Radix UI (40+ components)
@@ -1522,6 +1630,7 @@ npm run build
 - date-fns, clsx, class-variance-authority
 
 ### Backend Dependencies (20+)
+
 - Express 4.18.2, TypeScript
 - SQLite 5.1.7, bcryptjs 2.4.3
 - JWT 9.0.2, uuid 9.0.1
@@ -1529,12 +1638,15 @@ npm run build
 - PDFKit 0.13.0, cors 2.8.5
 
 ### Database Tables (50+)
+
 See [Database Schema](#database-schema) section
 
 ### API Endpoints (100+)
+
 See [API Endpoints](#api-endpoints) section
 
 ### Pages/Routes (60+)
+
 See [File Structure](#file-structure) section
 
 ---
