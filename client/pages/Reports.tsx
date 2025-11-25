@@ -537,6 +537,10 @@ export default function Reports() {
     visits_today: number;
   } | null>(null);
   const [referrersList, setReferrersList] = useState<any[]>([]);
+  const [approvedReferrals, setApprovedReferrals] = useState<any[]>([]);
+  const [referralSearch, setReferralSearch] = useState("");
+  const [minPercent, setMinPercent] = useState<number | null>(null);
+  const [maxPercent, setMaxPercent] = useState<number | null>(null);
   const [visitorsList, setVisitorsList] = useState<any[]>([]);
 
   // Helper: download CSV
@@ -749,7 +753,7 @@ export default function Reports() {
       subtitle: "সার্বিক ভর্তি রিপোর্ট এবং অন্তর্দৃষ্���ি",
       dateRange: "তারিখের পরিসীমা",
       program: "প্রোগ্রাম",
-      department: "বিভাগ",
+      department: "বিভ��গ",
       semester: "সেমিস্টার",
       year: "বছর",
       generateReport: "রিপোর্��� তৈর��� করুন",
@@ -766,7 +770,7 @@ export default function Reports() {
       allSemesters: "সব সেমিস্টার",
       spring2024: "বসন্ত ২০২৪",
       fall2024: "শরৎ ২০২৪",
-      summer2024: "গ্রীষ্ম ২০২৪",
+      summer2024: "গ্রীষ্�� ২০২৪",
       backToReports: "রিপোর্টে ���িরুন",
 
       // Report Categories
@@ -775,7 +779,7 @@ export default function Reports() {
       studentReports: "শিক্ষার্��ী রিপোর্ট",
       financialReports: "আর্থিক রিপোর্ট",
       waiverReports: "মওকুফ রিপোর্ট",
-      idCardReports: "আইডি কার্ড রিপোর্ট",
+      idCardReports: "আইডি কার��ড রিপোর্ট",
       targetReports: "লক্ষ্য র��পোর্ট",
 
       totalApplications: "মোট আবেদন",
@@ -786,16 +790,16 @@ export default function Reports() {
       monthlyTrends: "মাসিক আবেদনের প্রবণতা",
       admissionRate: "ভর্তি�� হার",
       averageProcessingTime: "গড় প্রক্রিয়াকরণ সময়",
-      topPerformingDepartments: "সেরা পারফরম্যান্স বিভাগ",
+      topPerformingDepartments: "সেরা পারফ��ম্যান্স বিভাগ",
       revenueGenerated: "আয় ���ৃষ্টি",
 
       programWiseAdmissions:
         "প্রোগ্রাম অনুযায়ী সেমিস্টার প্রতি ভর্তিকৃত শিক্ষার্��ীর সংখ্যা",
-      employeeWiseCollection: "কর্মচারী অনুযায়ী ভর্তি ফি সংগ্রহ",
-      dailyCollectionReport: "ভর্তি কর্মকর্তাদের দ���নিক সংগ্র�� রিপোর্ট",
+      employeeWiseCollection: "কর্মচারী অনুযায়ী ভ��্তি ফি সংগ্রহ",
+      dailyCollectionReport: "ভর্তি কর্মকর���তাদের দ���নিক সংগ্র�� রিপোর্ট",
 
       departmentColumn: "বিভাগ",
-      rate: "হার",
+      rate: "হ���র",
       cse: "কম্পিউটা�� সায়েন্স ও ইঞ্জিনিয়ারি���",
       eee: "ইলেকট্রিক্যাল ও ইলেকট্রনিক ইঞ্জ��নিয়ারিং",
       mech: "মেকানিক্যাল ইঞ্জিনিয়ারিং",
@@ -803,7 +807,7 @@ export default function Reports() {
       textile: "টেক��সটাইল ইঞ্জ��নিয়ারিং",
       bba: "ব্যবসায় প্রশাসন",
       law: "আইন",
-      architecture: "স্থাপত্য",
+      architecture: "স্��াপত্য",
       pharmacy: "ফার্মেসি",
       english: "ইংরেজি",
       days: "দিন",
@@ -855,6 +859,20 @@ export default function Reports() {
             total_commission: totalCommission,
           });
           setReferrersList(refRes.data.referrers || []);
+
+          // Load approved referrals from localStorage (frontend mock)
+          try {
+            const rawApproved =
+              (typeof localStorage !== "undefined" &&
+                localStorage.getItem("nu_approved_referrals")) ||
+              "[]";
+            const approvedList = JSON.parse(rawApproved || "[]");
+            setApprovedReferrals(
+              Array.isArray(approvedList) ? approvedList : [],
+            );
+          } catch (e) {
+            // ignore errors
+          }
         }
 
         const visRes = await apiClient.getVisitors({ page: 1, limit: 1000 });
@@ -902,6 +920,27 @@ export default function Reports() {
       return true;
     });
   }, [selectedDepartment]);
+
+  const filteredApprovedReferrals = useMemo(() => {
+    return (approvedReferrals || []).filter((item: any) => {
+      if (referralSearch) {
+        const s = referralSearch.toLowerCase();
+        if (
+          !(
+            (item.applicant_name || "").toLowerCase().includes(s) ||
+            (item.referrer_name || "").toLowerCase().includes(s) ||
+            (item.referrer_employee_id || "").toLowerCase().includes(s)
+          )
+        )
+          return false;
+      }
+      if (minPercent != null && Number(item.percentage) < Number(minPercent))
+        return false;
+      if (maxPercent != null && Number(item.percentage) > Number(maxPercent))
+        return false;
+      return true;
+    });
+  }, [approvedReferrals, referralSearch, minPercent, maxPercent]);
 
   const filteredStudentData = useMemo(() => {
     return studentListData.filter((item) => {
@@ -1606,18 +1645,32 @@ export default function Reports() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {referrersList.map((r) => (
-                      <TableRow key={r.employee_id}>
-                        <TableCell className="font-mono">
-                          {r.employee_id}
+                    {Array.isArray(referrersList) &&
+                    referrersList.length > 0 ? (
+                      referrersList.map((r) => (
+                        <TableRow key={r.employee_id}>
+                          <TableCell className="font-mono">
+                            {r.employee_id}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {r.name}
+                          </TableCell>
+                          <TableCell>{r.department}</TableCell>
+                          <TableCell>{r.designation}</TableCell>
+                          <TableCell>{r.email}</TableCell>
+                          <TableCell>{r.phone}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={6}
+                          className="text-sm text-gray-500"
+                        >
+                          No referrers found
                         </TableCell>
-                        <TableCell className="font-medium">{r.name}</TableCell>
-                        <TableCell>{r.department}</TableCell>
-                        <TableCell>{r.designation}</TableCell>
-                        <TableCell>{r.email}</TableCell>
-                        <TableCell>{r.phone}</TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -2122,6 +2175,111 @@ export default function Reports() {
                 </CardContent>
               </Card>
             </div>
+
+            <Card className="bg-white shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-poppins text-deep-plum">
+                  Approved Referrals
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    placeholder="Search applicant or referrer"
+                    value={referralSearch}
+                    onChange={(e) => setReferralSearch(e.target.value)}
+                    className="border rounded p-1"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Min %"
+                    value={minPercent ?? ""}
+                    onChange={(e) =>
+                      setMinPercent(
+                        e.target.value ? Number(e.target.value) : null,
+                      )
+                    }
+                    className="border rounded p-1 w-24"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max %"
+                    value={maxPercent ?? ""}
+                    onChange={(e) =>
+                      setMaxPercent(
+                        e.target.value ? Number(e.target.value) : null,
+                      )
+                    }
+                    className="border rounded p-1 w-24"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setReferralSearch("");
+                      setMinPercent(null);
+                      setMaxPercent(null);
+                    }}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-deep-plum"
+                    onClick={() => {
+                      try {
+                        const raw =
+                          localStorage.getItem("nu_approved_referrals") || "[]";
+                        const list = JSON.parse(raw || "[]") || [];
+                        downloadCSV("approved_referrals.csv", list);
+                      } catch (e) {
+                        alert("No approved referrals to export");
+                      }
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Export
+                  </Button>
+                </div>
+                <div className="max-h-64 overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Applicant</TableHead>
+                        <TableHead>Referrer</TableHead>
+                        <TableHead>Percentage</TableHead>
+                        <TableHead>Commission</TableHead>
+                        <TableHead>Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredApprovedReferrals.map((ar) => (
+                        <TableRow key={ar.application_id}>
+                          <TableCell>{ar.applicant_name}</TableCell>
+                          <TableCell>
+                            {ar.referrer_name || ar.referrer_employee_id}
+                          </TableCell>
+                          <TableCell>{ar.percentage}%</TableCell>
+                          <TableCell>
+                            ৳
+                            {Number(ar.commission_amount || 0).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(ar.approved_at).toLocaleString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {filteredApprovedReferrals.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5}>
+                            No approved referrals
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               {/* Department-wise Admissions */}

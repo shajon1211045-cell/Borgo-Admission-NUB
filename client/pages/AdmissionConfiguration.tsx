@@ -180,8 +180,12 @@ export default function AdmissionConfiguration() {
     useState<ProgramEligibilityConfig>({});
   // Referrers list for referral config preview
   const [referrersList, setReferrersList] = useState<any[]>([]);
-  const [programWaiverRules, setProgramWaiverRules] = useState<Record<string, { maxPercentage:number; types: string[] }>>({});
-  const [programTestConfig, setProgramTestConfig] = useState<Record<string, { requiresAdmissionTest: boolean; admissionTestFee: number }>>({});
+  const [programWaiverRules, setProgramWaiverRules] = useState<
+    Record<string, { maxPercentage: number; types: string[] }>
+  >({});
+  const [programTestConfig, setProgramTestConfig] = useState<
+    Record<string, { requiresAdmissionTest: boolean; admissionTestFee: number }>
+  >({});
 
   // Validation errors for inline messages
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -287,7 +291,10 @@ export default function AdmissionConfiguration() {
     setProgramEligibility(defaultEligibility);
 
     // Initialize programTestConfig defaults from PROGRAM_ELIGIBILITY_RULES if empty
-    const defaultTestConfig: Record<string, { requiresAdmissionTest: boolean; admissionTestFee: number }> = {};
+    const defaultTestConfig: Record<
+      string,
+      { requiresAdmissionTest: boolean; admissionTestFee: number }
+    > = {};
     PROGRAM_ELIGIBILITY_RULES.forEach((p) => {
       defaultTestConfig[p.programId] = {
         requiresAdmissionTest: p.requiresAdmissionTest || false,
@@ -312,7 +319,56 @@ export default function AdmissionConfiguration() {
         initializeProgramConfigurations(settingsResponse.data);
       } else {
         // Initialize with defaults if settings failed to load
+        const defaultSettings: AdmissionSettings = {
+          application_start_date: new Date().toISOString().slice(0, 10),
+          application_deadline: new Date().toISOString().slice(0, 10),
+          late_fee_deadline: new Date().toISOString().slice(0, 10),
+          session_name: "",
+          admission_fee: 0,
+          late_fee: 0,
+          max_waiver_percentage: 0,
+          is_admission_open: false,
+          allow_application_editing: true,
+          waiver_enabled: false,
+          auto_approve_applications: false,
+          require_payment_for_review: false,
+          enable_sms_notifications: false,
+          enable_email_notifications: false,
+          contact_email: "",
+          contact_phone: "",
+          help_desk_hours: "",
+          eligibility_check_enabled: false,
+          strict_eligibility_enforcement: false,
+          allow_eligibility_override: false,
+          minimum_ssc_gpa: 0,
+          minimum_hsc_gpa: 0,
+          minimum_bachelor_gpa: 0,
+          minimum_master_gpa: 0,
+          allow_alternative_qualifications: false,
+          show_suggested_programs: false,
+          max_combined_waiver: 0,
+          require_document_verification_for_waiver: false,
+          auto_calculate_result_waiver: false,
+          allow_manual_waiver_override: false,
+          law_admission_test_date: "",
+          architecture_admission_test_date: "",
+          admission_test_fee: 0,
+          law_test_time: "",
+          architecture_test_time: "",
+          law_test_venue_main: "",
+          law_test_venue_khulna: "",
+          architecture_test_venue_main: "",
+          architecture_test_venue_khulna: "",
+          referral_enabled: false,
+          default_referral_commission: 0,
+        };
+        setSettings(defaultSettings);
         initializeProgramConfigurations();
+        toast({
+          title: "Warning",
+          description: "Failed to load admission settings. Using defaults.",
+          variant: "destructive",
+        });
       }
 
       // Load payment methods
@@ -356,9 +412,15 @@ export default function AdmissionConfiguration() {
   useEffect(() => {
     if (paymentDialogOpen) {
       // clear related errors when opening dialog
-      setErrors((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith('payment_'))));
+      setErrors((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).filter(([k]) => !k.startsWith("payment_")),
+        ),
+      );
       setTimeout(() => {
-        (document.getElementById('payment_name') as HTMLElement | null)?.focus();
+        (
+          document.getElementById("payment_name") as HTMLElement | null
+        )?.focus();
       }, 0);
     } else {
       // restore focus to last active element
@@ -373,9 +435,13 @@ export default function AdmissionConfiguration() {
   // Focus management for document dialog
   useEffect(() => {
     if (documentDialogOpen) {
-      setErrors((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith('doc_'))));
+      setErrors((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).filter(([k]) => !k.startsWith("doc_")),
+        ),
+      );
       setTimeout(() => {
-        (document.getElementById('doc_name') as HTMLElement | null)?.focus();
+        (document.getElementById("doc_name") as HTMLElement | null)?.focus();
       }, 0);
     } else {
       try {
@@ -398,17 +464,22 @@ export default function AdmissionConfiguration() {
       try {
         // import helper dynamically to avoid circular issues in some test environments
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { validateAdmissionSettings } = require('./admissionConfigUtils');
-        const { errors: validationErrors } = validateAdmissionSettings(settings);
+        const { validateAdmissionSettings } = require("./admissionConfigUtils");
+        const { errors: validationErrors } =
+          validateAdmissionSettings(settings);
         if (validationErrors && Object.keys(validationErrors).length > 0) {
           setErrors(validationErrors);
-          toast({ title: 'Validation Error', description: 'Please fix the highlighted fields.', variant: 'destructive' });
+          toast({
+            title: "Validation Error",
+            description: "Please fix the highlighted fields.",
+            variant: "destructive",
+          });
           setSaving(false);
           return;
         }
       } catch (e) {
         // if helper fails for some reason, continue with existing flow
-        console.warn('Validation helper failed', e);
+        console.warn("Validation helper failed", e);
       }
 
       // Combine all settings including program limits and eligibility
@@ -448,7 +519,8 @@ export default function AdmissionConfiguration() {
   const openPaymentDialog = (payment?: PaymentMethod) => {
     // remember the element that had focus so we can restore it when dialog closes
     try {
-      lastActiveElementRef.current = document.activeElement as HTMLElement | null;
+      lastActiveElementRef.current =
+        document.activeElement as HTMLElement | null;
     } catch (e) {
       lastActiveElementRef.current = null;
     }
@@ -526,7 +598,8 @@ export default function AdmissionConfiguration() {
   // Document requirement handlers
   const openDocumentDialog = (document?: DocumentRequirement) => {
     try {
-      lastActiveElementRef.current = document.activeElement as HTMLElement | null;
+      lastActiveElementRef.current =
+        document.activeElement as HTMLElement | null;
     } catch (e) {
       lastActiveElementRef.current = null;
     }
@@ -702,53 +775,59 @@ export default function AdmissionConfiguration() {
                 <div>
                   <Label htmlFor="start_date">Application Start Date</Label>
                   <Input
-                  id="start_date"
-                  type="datetime-local"
-                  value={settings.application_start_date?.slice(0, 16) || ""}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      application_start_date: e.target.value,
-                    })
-                  }
-                />
-                {errors.application_start_date && (
-                  <p className="text-sm text-red-600 mt-1">{errors.application_start_date}</p>
-                )}
+                    id="start_date"
+                    type="datetime-local"
+                    value={settings.application_start_date?.slice(0, 16) || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        application_start_date: e.target.value,
+                      })
+                    }
+                  />
+                  {errors.application_start_date && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.application_start_date}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="deadline">Application Deadline</Label>
                   <Input
-                  id="deadline"
-                  type="datetime-local"
-                  value={settings.application_deadline?.slice(0, 16) || ""}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      application_deadline: e.target.value,
-                    })
-                  }
-                />
-                {errors.application_deadline && (
-                  <p className="text-sm text-red-600 mt-1">{errors.application_deadline}</p>
-                )}
+                    id="deadline"
+                    type="datetime-local"
+                    value={settings.application_deadline?.slice(0, 16) || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        application_deadline: e.target.value,
+                      })
+                    }
+                  />
+                  {errors.application_deadline && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.application_deadline}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="late_deadline">Late Fee Deadline</Label>
                   <Input
-                  id="late_deadline"
-                  type="datetime-local"
-                  value={settings.late_fee_deadline?.slice(0, 16) || ""}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      late_fee_deadline: e.target.value,
-                    })
-                  }
-                />
-                {errors.late_fee_deadline && (
-                  <p className="text-sm text-red-600 mt-1">{errors.late_fee_deadline}</p>
-                )}
+                    id="late_deadline"
+                    type="datetime-local"
+                    value={settings.late_fee_deadline?.slice(0, 16) || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        late_fee_deadline: e.target.value,
+                      })
+                    }
+                  />
+                  {errors.late_fee_deadline && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.late_fee_deadline}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="session_name">Session Name</Label>
@@ -1523,57 +1602,120 @@ export default function AdmissionConfiguration() {
                 </div>
               </div>
 
-<Card>
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">Waiver Rules</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="space-y-4">
-      <p className="text-sm text-gray-600">Configure per-program maximum waiver percentage and allowed waiver types.</p>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Program</TableHead>
-              <TableHead>Max Waiver %</TableHead>
-              <TableHead>Allowed Types</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Object.entries(programEligibility).map(([key, cfg]) => {
-              const rule = programWaiverRules[key] || { maxPercentage: settings.max_combined_waiver || 0, types: [] };
-              const programLabel = key.split("_").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-              return (
-                <TableRow key={key}>
-                  <TableCell className="font-medium">{programLabel}</TableCell>
-                  <TableCell>
-                    <Input type="number" min={0} max={100} className="w-24" value={rule.maxPercentage} onChange={(e) => setProgramWaiverRules(prev => ({ ...prev, [key]: { ...(prev[key]||{types:[]}), maxPercentage: Number(e.target.value) } }))} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {['merit','sibling','staff','sports'].map(t => (
-                        <label key={t} className="inline-flex items-center gap-2 text-sm">
-                          <input type="checkbox" checked={rule.types.includes(t)} onChange={(e) => {
-                            setProgramWaiverRules(prev => {
-                              const prevTypes = prev[key]?.types || [];
-                              const nextTypes = e.target.checked ? [...prevTypes, t] : prevTypes.filter(x => x !== t);
-                              return { ...prev, [key]: { ...(prev[key]||{}), maxPercentage: rule.maxPercentage, types: nextTypes } };
-                            });
-                          }} />
-                          <span className="capitalize">{t}</span>
-                        </label>
-                      ))}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    Waiver Rules
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Configure per-program maximum waiver percentage and
+                      allowed waiver types.
+                    </p>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Program</TableHead>
+                            <TableHead>Max Waiver %</TableHead>
+                            <TableHead>Allowed Types</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Object.entries(programEligibility).map(
+                            ([key, cfg]) => {
+                              const rule = programWaiverRules[key] || {
+                                maxPercentage:
+                                  settings.max_combined_waiver || 0,
+                                types: [],
+                              };
+                              const programLabel = key
+                                .split("_")
+                                .map(
+                                  (w) => w.charAt(0).toUpperCase() + w.slice(1),
+                                )
+                                .join(" ");
+                              return (
+                                <TableRow key={key}>
+                                  <TableCell className="font-medium">
+                                    {programLabel}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      max={100}
+                                      className="w-24"
+                                      value={rule.maxPercentage}
+                                      onChange={(e) =>
+                                        setProgramWaiverRules((prev) => ({
+                                          ...prev,
+                                          [key]: {
+                                            ...(prev[key] || { types: [] }),
+                                            maxPercentage: Number(
+                                              e.target.value,
+                                            ),
+                                          },
+                                        }))
+                                      }
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      {[
+                                        "merit",
+                                        "sibling",
+                                        "staff",
+                                        "sports",
+                                      ].map((t) => (
+                                        <label
+                                          key={t}
+                                          className="inline-flex items-center gap-2 text-sm"
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={rule.types.includes(t)}
+                                            onChange={(e) => {
+                                              setProgramWaiverRules((prev) => {
+                                                const prevTypes =
+                                                  prev[key]?.types || [];
+                                                const nextTypes = e.target
+                                                  .checked
+                                                  ? [...prevTypes, t]
+                                                  : prevTypes.filter(
+                                                      (x) => x !== t,
+                                                    );
+                                                return {
+                                                  ...prev,
+                                                  [key]: {
+                                                    ...(prev[key] || {}),
+                                                    maxPercentage:
+                                                      rule.maxPercentage,
+                                                    types: nextTypes,
+                                                  },
+                                                };
+                                              });
+                                            }}
+                                          />
+                                          <span className="capitalize">
+                                            {t}
+                                          </span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            },
+                          )}
+                        </TableBody>
+                      </Table>
                     </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  </CardContent>
-</Card>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Save Button */}
               <div className="flex justify-end">
@@ -1633,8 +1775,13 @@ export default function AdmissionConfiguration() {
 
               {/* Program Test Requirements */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-deep-plum">Program-wise Test Requirements</h3>
-                <p className="text-sm text-gray-600">Toggle which programs require an admission test and adjust test fee per program.</p>
+                <h3 className="text-lg font-semibold text-deep-plum">
+                  Program-wise Test Requirements
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Toggle which programs require an admission test and adjust
+                  test fee per program.
+                </p>
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -1647,19 +1794,57 @@ export default function AdmissionConfiguration() {
                     </TableHeader>
                     <TableBody>
                       {PROGRAM_ELIGIBILITY_RULES.map((p) => {
-                        const cfg = programTestConfig[p.programId] || { requiresAdmissionTest: p.requiresAdmissionTest || false, admissionTestFee: p.admissionTestFee || 0 };
+                        const cfg = programTestConfig[p.programId] || {
+                          requiresAdmissionTest:
+                            p.requiresAdmissionTest || false,
+                          admissionTestFee: p.admissionTestFee || 0,
+                        };
                         return (
                           <TableRow key={p.programId}>
-                            <TableCell className="font-medium">{p.programName}</TableCell>
-                            <TableCell>{p.level === 'undergraduate' ? 'Undergraduate' : 'Postgraduate'}</TableCell>
-                            <TableCell>
-                              <Switch checked={!!cfg.requiresAdmissionTest} onCheckedChange={(v) => setProgramTestConfig(prev => ({ ...prev, [p.programId]: { ...(prev[p.programId]||{}), requiresAdmissionTest: v as boolean, admissionTestFee: cfg.admissionTestFee } }))} aria-label={`Toggle admission test for ${p.programName}`} />
+                            <TableCell className="font-medium">
+                              {p.programName}
                             </TableCell>
                             <TableCell>
-                              <Input type="number" min={0} className="w-36" value={cfg.admissionTestFee} onChange={(e) => {
-                                const val = Number(e.target.value) || 0;
-                                setProgramTestConfig(prev => ({ ...prev, [p.programId]: { ...(prev[p.programId]||{}), admissionTestFee: val, requiresAdmissionTest: cfg.requiresAdmissionTest } }));
-                              }} aria-label={`Admission test fee for ${p.programName}`} />
+                              {p.level === "undergraduate"
+                                ? "Undergraduate"
+                                : "Postgraduate"}
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={!!cfg.requiresAdmissionTest}
+                                onCheckedChange={(v) =>
+                                  setProgramTestConfig((prev) => ({
+                                    ...prev,
+                                    [p.programId]: {
+                                      ...(prev[p.programId] || {}),
+                                      requiresAdmissionTest: v as boolean,
+                                      admissionTestFee: cfg.admissionTestFee,
+                                    },
+                                  }))
+                                }
+                                aria-label={`Toggle admission test for ${p.programName}`}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                min={0}
+                                className="w-36"
+                                value={cfg.admissionTestFee}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value) || 0;
+                                  setProgramTestConfig((prev) => ({
+                                    ...prev,
+                                    [p.programId]: {
+                                      ...(prev[p.programId] || {}),
+                                      admissionTestFee: val,
+                                      requiresAdmissionTest:
+                                        cfg.requiresAdmissionTest,
+                                    },
+                                  }));
+                                }}
+                                aria-label={`Admission test fee for ${p.programName}`}
+                              />
                             </TableCell>
                           </TableRow>
                         );
@@ -2008,15 +2193,22 @@ export default function AdmissionConfiguration() {
                       checked={!!settings?.referral_enabled}
                       onCheckedChange={(v) =>
                         setSettings((prev) =>
-                          prev ? { ...prev, referral_enabled: v as boolean } : prev,
+                          prev
+                            ? { ...prev, referral_enabled: v as boolean }
+                            : prev,
                         )
                       }
                     />
-                    <p className="text-sm text-gray-600">Allow admission officers to register referrals and applicants to enter referral IDs.</p>
+                    <p className="text-sm text-gray-600">
+                      Allow admission officers to register referrals and
+                      applicants to enter referral IDs.
+                    </p>
                   </div>
 
                   <div className="mt-4">
-                    <Label className="font-medium">Default Commission (%)</Label>
+                    <Label className="font-medium">
+                      Default Commission (%)
+                    </Label>
                     <Input
                       type="number"
                       min={0}
@@ -2024,32 +2216,61 @@ export default function AdmissionConfiguration() {
                       value={settings?.default_referral_commission ?? 5}
                       onChange={(e) =>
                         setSettings((prev) =>
-                          prev ? { ...prev, default_referral_commission: Number(e.target.value) } : prev,
+                          prev
+                            ? {
+                                ...prev,
+                                default_referral_commission: Number(
+                                  e.target.value,
+                                ),
+                              }
+                            : prev,
                         )
                       }
                       className="w-32"
                     />
                     {errors.default_referral_commission && (
-                      <p className="text-sm text-red-600 mt-1">{errors.default_referral_commission}</p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.default_referral_commission}
+                      </p>
                     )}
-                    <p className="text-xs text-gray-500 mt-2">This is the default commission rate applied to referrals when not overridden per employee.</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      This is the default commission rate applied to referrals
+                      when not overridden per employee.
+                    </p>
                   </div>
                 </div>
 
                 <div className="p-4 bg-white border rounded-lg">
-                  <CardTitle className="text-sm font-medium mb-2">Top Referrers Preview</CardTitle>
-                  <p className="text-xs text-gray-500 mb-3">A preview of active referrers and their commission rates (managed in Referrals page).</p>
+                  <CardTitle className="text-sm font-medium mb-2">
+                    Top Referrers Preview
+                  </CardTitle>
+                  <p className="text-xs text-gray-500 mb-3">
+                    A preview of active referrers and their commission rates
+                    (managed in Referrals page).
+                  </p>
                   <div className="space-y-2 max-h-48 overflow-auto">
-                    {referrersList.length === 0 ? (
-                      <div className="text-sm text-gray-500">No referrers found.</div>
+                    {!Array.isArray(referrersList) ||
+                    referrersList.length === 0 ? (
+                      <div className="text-sm text-gray-500">
+                        No referrers found.
+                      </div>
                     ) : (
-                      referrersList.map((r) => (
-                        <div key={r.employee_id} className="flex items-center justify-between p-2 border rounded">
+                      (referrersList as any[]).map((r) => (
+                        <div
+                          key={r.employee_id}
+                          className="flex items-center justify-between p-2 border rounded"
+                        >
                           <div>
-                            <div className="font-medium">{r.name} ({r.employee_id})</div>
-                            <div className="text-xs text-gray-500">{r.department} • {r.designation}</div>
+                            <div className="font-medium">
+                              {r.name} ({r.employee_id})
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {r.department} • {r.designation}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-700">{(r.commission_rate * 100).toFixed(1)}%</div>
+                          <div className="text-sm text-gray-700">
+                            {(r.commission_rate * 100).toFixed(1)}%
+                          </div>
                         </div>
                       ))
                     )}
@@ -2058,7 +2279,14 @@ export default function AdmissionConfiguration() {
               </div>
 
               <div className="mt-6 flex justify-end">
-                <Button onClick={saveSettings} disabled={saving} className="bg-deep-plum"><Save className="w-4 h-4 mr-2"/>Save Referral Settings</Button>
+                <Button
+                  onClick={saveSettings}
+                  disabled={saving}
+                  className="bg-deep-plum"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Referral Settings
+                </Button>
               </div>
             </CardContent>
           </Card>

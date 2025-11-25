@@ -132,6 +132,23 @@ export const initializeSchema = async (): Promise<void> => {
       )
     `);
 
+    // Referral requests table (finance approvals)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS referral_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        application_id INTEGER NOT NULL,
+        referrer_employee_id TEXT,
+        admission_fee REAL DEFAULT 0,
+        percentage REAL DEFAULT 0,
+        amount REAL DEFAULT 0,
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+        processed_by TEXT,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        processed_at DATETIME
+      )
+    `);
+
     // Sessions table
     await dbRun(`
       CREATE TABLE IF NOT EXISTS sessions (
@@ -156,6 +173,44 @@ export const initializeSchema = async (): Promise<void> => {
         generated_by TEXT NOT NULL,
         is_sent BOOLEAN DEFAULT 0,
         FOREIGN KEY (application_id) REFERENCES applications (id)
+      )
+    `);
+
+    // Students table - created when applications are converted to enrolled students
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS students (
+        student_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        application_id INTEGER,
+        university_id TEXT UNIQUE NOT NULL,
+        ugc_id TEXT UNIQUE,
+        program_code TEXT,
+        campus_id INTEGER,
+        semester_id INTEGER,
+        full_name TEXT,
+        email TEXT,
+        mobile_number TEXT,
+        batch TEXT,
+        enrolled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_by TEXT,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (application_id) REFERENCES applications_v2 (application_id)
+      )
+    `);
+
+    // Student bills (initial admission fee / tuition bills)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS student_bills (
+        bill_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        application_id INTEGER,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        due_date DATE,
+        status TEXT NOT NULL DEFAULT 'Unpaid' CHECK (status IN ('Unpaid','Paid','Partial')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        paid_at DATETIME,
+        created_by_user_id INTEGER,
+        FOREIGN KEY (student_id) REFERENCES students(student_id)
       )
     `);
 
@@ -203,6 +258,97 @@ export const initializeSchema = async (): Promise<void> => {
         order_priority INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Fee packages (structured fee components per program/session)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS fee_packages (
+        fee_package_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        program_code TEXT NOT NULL,
+        session_name TEXT,
+        admission_fee REAL DEFAULT 0,
+        tuition_fee REAL DEFAULT 0,
+        lab_fee REAL DEFAULT 0,
+        other_fees REAL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_by_user_id INTEGER
+      )
+    `);
+
+    // Registration packages (admin-managed list of full registration package offerings)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS registration_packages (
+        id TEXT PRIMARY KEY,
+        program TEXT NOT NULL,
+        term TEXT,
+        mode TEXT,
+        credits INTEGER,
+        admission_fee REAL DEFAULT 0,
+        per_credit REAL DEFAULT 0,
+        fixed_fees REAL DEFAULT 0,
+        total_estimated REAL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Waiver policies (admin-managed)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS waiver_policies (
+        waiver_policy_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        percentage REAL NOT NULL,
+        active INTEGER DEFAULT 1,
+        criteria_json TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_by_user_id INTEGER
+      )
+    `);
+
+    // Program courses (canonical first semester mapping)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS program_courses (
+        program_course_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        program_code TEXT NOT NULL,
+        course_code TEXT NOT NULL,
+        course_name TEXT NOT NULL,
+        semester INTEGER NOT NULL,
+        credits REAL NOT NULL,
+        is_mandatory INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Student course offerings (created when offering courses)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS student_course_offerings (
+        offering_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        application_id INTEGER,
+        program_course_id INTEGER NOT NULL,
+        offered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        offered_by_user_id INTEGER,
+        status TEXT DEFAULT 'Offered' CHECK (status IN ('Offered','Accepted','Declined')),
+        notes TEXT,
+        FOREIGN KEY (student_id) REFERENCES students(student_id),
+        FOREIGN KEY (program_course_id) REFERENCES program_courses(program_course_id)
+      )
+    `);
+
+    // Admission circulars management
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS admission_circulars (
+        circular_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        start_date DATE,
+        end_date DATE,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_by_user_id INTEGER
       )
     `);
 
@@ -291,6 +437,22 @@ export const initializeSchema = async (): Promise<void> => {
         permanent_address TEXT,
         present_address TEXT,
         photo_url TEXT,
+        -- Parent / Guardian details
+        father_name TEXT,
+        father_phone TEXT,
+        mother_name TEXT,
+        mother_phone TEXT,
+        guardian_name TEXT,
+        guardian_phone TEXT,
+        guardian_address TEXT,
+        -- Additional personal fields
+        quota TEXT,
+        religion TEXT,
+        disability_status TEXT,
+        blood_group TEXT,
+        required_credits REAL,
+        grading_system TEXT,
+        remarks TEXT,
         admission_type TEXT CHECK (admission_type IN ('Regular','CreditTransfer')),
         previous_university TEXT,
         credits_earned REAL,
@@ -314,9 +476,15 @@ export const initializeSchema = async (): Promise<void> => {
     `);
 
     // Unique constraints (partial uniqueness emulation via triggers is heavy; store simple indexes)
-    await dbRun(`CREATE UNIQUE INDEX IF NOT EXISTS ix_app_v2_ref_no ON applications_v2(ref_no)`);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_app_v2_semester_status ON applications_v2(semester_id, status)`);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_app_v2_program_created ON applications_v2(program_code, created_at)`);
+    await dbRun(
+      `CREATE UNIQUE INDEX IF NOT EXISTS ix_app_v2_ref_no ON applications_v2(ref_no)`,
+    );
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_app_v2_semester_status ON applications_v2(semester_id, status)`,
+    );
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_app_v2_program_created ON applications_v2(program_code, created_at)`,
+    );
 
     // Academic history
     await dbRun(`
@@ -338,7 +506,43 @@ export const initializeSchema = async (): Promise<void> => {
         FOREIGN KEY (application_id) REFERENCES applications_v2(application_id)
       )
     `);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_academic_history_app ON academic_history(application_id)`);
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_academic_history_app ON academic_history(application_id)`,
+    );
+
+    // Credit equivalency rules (map external grades to local grade points)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS credit_equivalency (
+        equivalency_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_scale TEXT NOT NULL,
+        source_value TEXT NOT NULL,
+        mapped_grade_point REAL NOT NULL,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_by_user_id INTEGER
+      )
+    `);
+
+    // Credit transfer records (log of transfer calculations and assignments)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS credit_transfer_records (
+        transfer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        application_id INTEGER NOT NULL,
+        transferred_credits REAL NOT NULL,
+        previous_credits REAL,
+        previous_cgpa REAL,
+        new_credits REAL,
+        new_cgpa REAL,
+        details_json TEXT,
+        processed_by_user_id INTEGER,
+        processed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (application_id) REFERENCES applications_v2(application_id)
+      )
+    `);
+
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_credit_transfer_app ON credit_transfer_records(application_id)`,
+    );
 
     // Documents
     await dbRun(`
@@ -361,24 +565,67 @@ export const initializeSchema = async (): Promise<void> => {
         FOREIGN KEY (application_id) REFERENCES applications_v2(application_id)
       )
     `);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_documents_app ON documents(application_id)`);
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_documents_app ON documents(application_id)`,
+    );
 
     // Waiver assignments
     await dbRun(`
       CREATE TABLE IF NOT EXISTS waiver_assignments (
         waiver_assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
         application_id INTEGER NOT NULL,
-        waiver_code TEXT NOT NULL,
-        percent REAL NOT NULL,
+        waiver_code TEXT,
+        percent REAL,
         assigned_by_user_id INTEGER,
         assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         locked INTEGER DEFAULT 0,
         locked_by_user_id INTEGER,
         locked_at DATETIME,
+        reason TEXT,
         FOREIGN KEY (application_id) REFERENCES applications_v2(application_id)
       )
     `);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_waiver_assignments_app ON waiver_assignments(application_id)`);
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_waiver_assignments_app ON waiver_assignments(application_id)`,
+    );
+
+    // Scholarships (program-level definitions)
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS scholarships (
+        scholarship_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        percentage REAL,
+        amount REAL,
+        active INTEGER DEFAULT 1,
+        criteria_json TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_by_user_id INTEGER
+      )
+    `);
+
+    // Scholarship assignments to applications
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS scholarship_assignments (
+        scholarship_assignment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        application_id INTEGER NOT NULL,
+        scholarship_id INTEGER NOT NULL,
+        percent REAL,
+        amount REAL,
+        assigned_by_user_id INTEGER,
+        assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        locked INTEGER DEFAULT 0,
+        locked_by_user_id INTEGER,
+        locked_at DATETIME,
+        FOREIGN KEY (application_id) REFERENCES applications_v2(application_id),
+        FOREIGN KEY (scholarship_id) REFERENCES scholarships(scholarship_id)
+      )
+    `);
+
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_scholarship_assign_app ON scholarship_assignments(application_id)`,
+    );
 
     // Admission tests
     await dbRun(`
@@ -396,7 +643,9 @@ export const initializeSchema = async (): Promise<void> => {
         FOREIGN KEY (application_id) REFERENCES applications_v2(application_id)
       )
     `);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_admission_tests_app ON admission_tests(application_id)`);
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_admission_tests_app ON admission_tests(application_id)`,
+    );
 
     // Audit trail (append-only)
     await dbRun(`
@@ -412,7 +661,9 @@ export const initializeSchema = async (): Promise<void> => {
         reason TEXT
       )
     `);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_audit_entity ON audit_trail(entity, entity_id, changed_at)`);
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_audit_entity ON audit_trail(entity, entity_id, changed_at)`,
+    );
 
     // Visitors/Leads
     await dbRun(`
@@ -471,6 +722,63 @@ export const initializeSchema = async (): Promise<void> => {
         active INTEGER DEFAULT 1
       )
     `);
+
+    // Notices and user notifications
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS notices (
+        notice_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        start_date DATE,
+        end_date DATE,
+        is_active INTEGER DEFAULT 1,
+        target_roles TEXT, -- JSON array of role_key strings or null for all
+        created_by_user_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS notice_attachments (
+        attachment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        notice_id INTEGER NOT NULL,
+        file_url TEXT NOT NULL,
+        file_name TEXT,
+        mime_type TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (notice_id) REFERENCES notices(notice_id)
+      )
+    `);
+
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS user_notifications (
+        notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        notice_id INTEGER,
+        title TEXT,
+        message TEXT,
+        type TEXT DEFAULT 'info',
+        read INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        read_at DATETIME,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (notice_id) REFERENCES notices(notice_id)
+      )
+    `);
+
+    // SMS queue for async delivery
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS sms_queue (
+        sms_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        to_number TEXT NOT NULL,
+        message TEXT NOT NULL,
+        provider TEXT,
+        status TEXT DEFAULT 'queued',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        processed_at DATETIME,
+        error TEXT
+      )
+    `);
     await dbRun(`
       CREATE TABLE IF NOT EXISTS admission_dashboard_cache (
         cache_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -494,6 +802,23 @@ export const initializeSchema = async (): Promise<void> => {
         export_format TEXT CHECK (export_format IN ('csv','xlsx','pdf')),
         row_count INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Export jobs table to track queued export processing and generated files
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS export_jobs (
+        job_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        export_id INTEGER,
+        export_type TEXT,
+        params_json TEXT,
+        status TEXT DEFAULT 'queued' CHECK (status IN ('queued','processing','done','failed')),
+        file_path TEXT,
+        file_name TEXT,
+        error TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        completed_at DATETIME,
+        FOREIGN KEY (export_id) REFERENCES audit_dashboard_export(export_id)
       )
     `);
 
@@ -526,7 +851,9 @@ export const initializeSchema = async (): Promise<void> => {
         error TEXT
       )
     `);
-    await dbRun(`CREATE INDEX IF NOT EXISTS ix_webhook_idempotency ON payment_webhook_events(idempotency_key)`);
+    await dbRun(
+      `CREATE INDEX IF NOT EXISTS ix_webhook_idempotency ON payment_webhook_events(idempotency_key)`,
+    );
 
     // RBAC core tables (roles & permissions)
     await dbRun(`
@@ -561,7 +888,9 @@ export const initializeSchema = async (): Promise<void> => {
     `);
 
     // Seed basic roles and permissions if empty
-    await dbRun(`INSERT OR IGNORE INTO roles (role_id, role_key) VALUES (1,'Applicant'),(2,'AdmissionOfficer'),(3,'FinanceOfficer'),(4,'Registrar'),(5,'FraudAnalyst'),(6,'Admin')`);
+    await dbRun(
+      `INSERT OR IGNORE INTO roles (role_id, role_key) VALUES (1,'Applicant'),(2,'AdmissionOfficer'),(3,'FinanceOfficer'),(4,'Registrar'),(5,'FraudAnalyst'),(6,'Admin')`,
+    );
 
     // Import jobs
     await dbRun(`

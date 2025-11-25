@@ -36,6 +36,7 @@ export default function Sidebar({ userType }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
   const { role } = useAuth();
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
   const publicPages = [
     { name: "Home", path: "/", icon: Home },
@@ -45,7 +46,6 @@ export default function Sidebar({ userType }: SidebarProps) {
       icon: GraduationCap,
     },
     { name: "Personal Info", path: "/personal-information", icon: User },
-    { name: "Academic History", path: "/academic-history", icon: FileText },
     { name: "Review & Submit", path: "/application-review", icon: FileText },
   ];
 
@@ -57,7 +57,16 @@ export default function Sidebar({ userType }: SidebarProps) {
 
   const adminPages = [
     { name: "Admissions", path: "/admin/admissions", icon: Users },
-    { name: "Waiver Management", path: "/admin/waivers", icon: Award },
+    {
+      name: "Credit Transfer",
+      path: "/admin/credit-transfers",
+      icon: BookOpen,
+    },
+    {
+      name: "Fee Structure & Packages",
+      path: "/admin/fee-structure",
+      icon: CreditCard,
+    },
     { name: "Offer Courses", path: "/admin/offer-courses", icon: BookOpen },
     {
       name: "ID Card Generation",
@@ -70,6 +79,7 @@ export default function Sidebar({ userType }: SidebarProps) {
       path: "/admin/student-management",
       icon: UserCog,
     },
+    { name: "Student Search", path: "/admin/student-search", icon: Users },
     {
       name: "Account Management",
       path: "/admin/account-management",
@@ -80,19 +90,27 @@ export default function Sidebar({ userType }: SidebarProps) {
       path: "/admin/admission-circular",
       icon: Mail,
     },
-    { name: "Change History", path: "/admin/change-history", icon: History },
-    { name: "Reports", path: "/admin/reports", icon: PieChart },
+    {
+      name: "Reports",
+      path: "/admin/reports",
+      icon: PieChart,
+      children: [
+        {
+          name: "Admission Departmental Reports",
+          path: "/admin/department-reports",
+          icon: PieChart,
+        },
+      ],
+    },
+    { name: "Report Centre", path: "/admin/report-centre", icon: PieChart },
     { name: "Messaging", path: "/admin/messaging", icon: Mail },
     { name: "Templates", path: "/admin/templates", icon: Mail },
     { name: "Mock Emails", path: "/admin/mock-emails", icon: Mail },
     { name: "Syllabus", path: "/admin/syllabus", icon: BookOpen },
     { name: "Visitors Log", path: "/admin/visitors-log", icon: Users },
     { name: "Referrals", path: "/admin/referrals", icon: Users },
-    {
-      name: "Configuration",
-      path: "/admin/configuration",
-      icon: Settings,
-    },
+    { name: "Change History", path: "/admin/change-history", icon: History },
+    { name: "Configuration", path: "/admin/configuration", icon: Settings },
     {
       name: "Permission Configuration",
       path: "/admin/permissions",
@@ -110,7 +128,6 @@ export default function Sidebar({ userType }: SidebarProps) {
     if (role === "admission_officer")
       return [
         { name: "Admissions", path: "/admin/admissions", icon: Users },
-        { name: "Waiver Management", path: "/admin/waivers", icon: Award },
         { name: "Offer Courses", path: "/admin/offer-courses", icon: BookOpen },
         {
           name: "ID Card Generation",
@@ -124,7 +141,21 @@ export default function Sidebar({ userType }: SidebarProps) {
         },
         { name: "Visitors Log", path: "/admin/visitors-log", icon: Users },
         { name: "Referrals", path: "/admin/referrals", icon: Users },
-        { name: "Reports", path: "/admin/reports?scope=admission", icon: PieChart },
+        {
+          name: "Credit Transfer List",
+          path: "/admin/credit-transfers",
+          icon: BookOpen,
+        },
+        {
+          name: "Registration Packages",
+          path: "/admin/registration-packages",
+          icon: BookOpen,
+        },
+        {
+          name: "Reports",
+          path: "/admin/reports?scope=admission",
+          icon: PieChart,
+        },
       ];
 
     // Offline admission staff should see only public application pages (form entry) — not admin menus
@@ -134,7 +165,11 @@ export default function Sidebar({ userType }: SidebarProps) {
       return [
         { name: "Finance", path: "/admin/finance", icon: CreditCard },
         // Finance officers shouldn't see ID Card Generation
-        { name: "Reports", path: "/admin/reports?scope=finance", icon: PieChart },
+        {
+          name: "Reports",
+          path: "/admin/reports?scope=finance",
+          icon: PieChart,
+        },
         { name: "Referrals", path: "/admin/referrals", icon: Users },
       ];
 
@@ -151,7 +186,9 @@ export default function Sidebar({ userType }: SidebarProps) {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div
+    <nav
+      role="navigation"
+      aria-label="Main Navigation"
       className={`${isCollapsed ? "w-16" : "w-64"} transition-all duration-300 bg-white border-r border-gray-200 min-h-screen flex flex-col`}
     >
       {/* Header */}
@@ -170,6 +207,10 @@ export default function Sidebar({ userType }: SidebarProps) {
             size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="text-gray-500 hover:text-deep-plum"
+            aria-label={
+              isCollapsed ? "Expand navigation" : "Collapse navigation"
+            }
+            aria-expanded={!isCollapsed}
           >
             {isCollapsed ? (
               <ChevronRight className="w-4 h-4" />
@@ -204,22 +245,79 @@ export default function Sidebar({ userType }: SidebarProps) {
       {/* Navigation */}
       <div className="flex-1 p-2">
         <div className="space-y-1">
-          {getPages().map((page) => (
-            <Link
-              key={page.path}
-              to={page.path}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                isActive(page.path)
-                  ? "bg-deep-plum text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <page.icon className="w-4 h-4 flex-shrink-0" />
-              {!isCollapsed && (
-                <span className="text-sm font-medium">{page.name}</span>
-              )}
-            </Link>
-          ))}
+          {getPages().map((page) => {
+            // If the page has children, render a collapsible group
+            if ((page as any).children && (page as any).children.length) {
+              const children = (page as any).children as any[];
+              const open = openMenus[page.name];
+              return (
+                <div key={page.path}>
+                  <button
+                    onClick={() =>
+                      setOpenMenus((s) => ({
+                        ...s,
+                        [page.name]: !s[page.name],
+                      }))
+                    }
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                      isActive(page.path) ||
+                      children.some((c) => isActive(c.path))
+                        ? "bg-deep-plum text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                    aria-expanded={!!open}
+                  >
+                    <page.icon className="w-4 h-4 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="text-sm font-medium">{page.name}</span>
+                    )}
+                  </button>
+
+                  {open && (
+                    <div className="mt-1 ml-6 space-y-1">
+                      {children.map((child) => (
+                        <Link
+                          key={child.path}
+                          to={child.path}
+                          aria-current={
+                            isActive(child.path) ? "page" : undefined
+                          }
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                            isActive(child.path)
+                              ? "bg-deep-plum text-white"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                        >
+                          <child.icon className="w-3 h-3 opacity-80" />
+                          {!isCollapsed && (
+                            <span className="text-sm">{child.name}</span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={page.path}
+                to={page.path}
+                aria-current={isActive(page.path) ? "page" : undefined}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  isActive(page.path)
+                    ? "bg-deep-plum text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <page.icon className="w-4 h-4 flex-shrink-0" />
+                {!isCollapsed && (
+                  <span className="text-sm font-medium">{page.name}</span>
+                )}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -231,6 +329,6 @@ export default function Sidebar({ userType }: SidebarProps) {
           </div>
         </div>
       )}
-    </div>
+    </nav>
   );
 }

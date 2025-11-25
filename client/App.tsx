@@ -56,7 +56,13 @@ import PermissionConfig from "./pages/PermissionConfig";
 import SyllabusManagement from "./pages/SyllabusManagement";
 import WaiverManagement from "./pages/WaiverManagement";
 import OfferCourses from "./pages/OfferCourses";
+import CreditTransferList from "./pages/CreditTransferList";
+import CreditTransferReview from "./pages/CreditTransferReview";
 import StudentManagement from "./pages/StudentManagement";
+import StudentProfile from "./pages/StudentProfile";
+import AdminAcademic from "./pages/AdminAcademic";
+import AdminScholarships from "./pages/AdminScholarships";
+import AdminEmployees from "./pages/AdminEmployees";
 import AccountManagement from "./pages/AccountManagement";
 import AdmissionCircular from "./pages/AdmissionCircular";
 import ChangeHistory from "./pages/ChangeHistory";
@@ -64,6 +70,18 @@ import IdCardGeneration from "./pages/IdCardGeneration";
 import VisitorsLog from "./pages/VisitorsLog";
 import Referrals from "./pages/Referrals";
 import MockEmails from "./pages/MockEmails";
+
+// New admin feature pages
+import NewStudentProfile from "./pages/admin/NewStudentProfile";
+import CreditTransferManagement from "./pages/admin/CreditTransferManagement";
+import FeeStructurePackageManagement from "./pages/admin/FeeStructurePackageManagement";
+import AdmissionDepartmentalReports from "./pages/admin/AdmissionDepartmentalReports";
+import StudentSearch from "./pages/admin/StudentSearch";
+import StudentDashboardSummary from "./pages/admin/StudentDashboardSummary";
+import ScholarshipWaiverManagement from "./pages/admin/ScholarshipWaiverManagement";
+import ReportCentre from "./pages/admin/ReportCentre";
+import AdmissionTarget from "./pages/admin/AdmissionTarget";
+import ProgramChange from "./pages/admin/ProgramChange";
 
 const queryClient = new QueryClient();
 
@@ -267,6 +285,88 @@ function AppContent() {
                 )
               }
             />
+
+            {/* New admin feature routes */}
+            <Route
+              path="/admin/new-student-profile"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <NewStudentProfile />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/credit-transfer-management"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <CreditTransferManagement />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/fee-structure"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <FeeStructurePackageManagement />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/department-reports"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <AdmissionDepartmentalReports />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/student-search"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <StudentSearch />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/student-dashboard-summary"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <StudentDashboardSummary />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/scholarships"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <ScholarshipWaiverManagement />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/report-centre"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <ReportCentre />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
             <Route
               path="/admin/templates"
               element={
@@ -371,11 +471,93 @@ function AppContent() {
                 )
               }
             />
+
+            <Route
+              path="/admin/credit-transfers"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <CreditTransferList />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+
+            <Route
+              path="/admin/credit-transfer/:id"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <CreditTransferReview />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
             <Route
               path="/admin/student-management"
               element={
                 isAuthenticated && userType === "admin" ? (
                   <StudentManagement />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/academic-management"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <AdminAcademic />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/scholarships"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <AdminScholarships />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/admission-target"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <AdmissionTarget />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/program-change"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <ProgramChange />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/employees"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <AdminEmployees />
+                ) : (
+                  <Navigate to="/admin" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin/student-profile"
+              element={
+                isAuthenticated && userType === "admin" ? (
+                  <StudentProfile />
                 ) : (
                   <Navigate to="/admin" replace />
                 )
@@ -447,7 +629,10 @@ function AppContent() {
             <Route
               path="/admin/referrals"
               element={
-                isAuthenticated && (userType === "admin" || roleLocal === "admission_officer" || roleLocal === "finance_officer") ? (
+                isAuthenticated &&
+                (userType === "admin" ||
+                  roleLocal === "admission_officer" ||
+                  roleLocal === "finance_officer") ? (
                   <Referrals />
                 ) : (
                   <Navigate to="/admin" replace />

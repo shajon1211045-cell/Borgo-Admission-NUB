@@ -50,6 +50,7 @@ import {
   type Department,
   type WaiverPolicy,
 } from "../lib/programData";
+import { registrationPackages } from "../lib/registrationPackages";
 import {
   checkProgramEligibility,
   PROGRAM_ELIGIBILITY_RULES,
@@ -145,6 +146,17 @@ export default function ProgramSelection() {
     waiverAmount: applicationData.waiverAmount || 0,
     finalAmount: applicationData.finalAmount || 0,
   });
+
+  // Package UI filters
+  const [pkgSearch, setPkgSearch] = useState("");
+  const [pkgTerm, setPkgTerm] = useState<string | null>(null);
+  const [pkgMode, setPkgMode] = useState<string | null>(null);
+  const [showAllPackages, setShowAllPackages] = useState(false);
+
+  // Currently applied registration package (by id)
+  const [appliedPackageId, setAppliedPackageId] = useState<string | null>(
+    applicationData.registrationPackageId || null,
+  );
 
   // Loading state
   const [isSaving, setIsSaving] = useState(false);
@@ -317,7 +329,7 @@ export default function ProgramSelection() {
         "Step 1 of 4 - Program Selection & Previous Academic Information",
     },
     bn: {
-      title: "প্রোগ্রাম ও বিভ���গ নির্বা��ন",
+      title: "প্রোগ্রাম ও ব���ভ����গ নির্বা��ন",
       subtitle:
         "৪টি ধাপের ১ম ধাপ - আপনার একাডে���িক পথ বেছে নিন ও খরচ গণ��া করুন",
       backToHome: "হোমে ফিরুন",
@@ -328,14 +340,14 @@ export default function ProgramSelection() {
       programSelection: "প্রোগ্রাম নির্বাচন করুন",
       departmentSelection: "বিভাগ নির্বাচন করুন",
       selectCampus: "আপনার ক্যাম্পাস বেছে নিন",
-      selectSemester: "সেমিস��টার বেছে নিন",
+      selectSemester: "সেমিস��টার ��েছে নিন",
       selectSemesterType: "সেমিস্টার ���রন বেছ�� ন��ন",
-      selectProgram: "আপনার প্র���গ্রাম বেছে নিন",
+      selectProgram: "আপনার প্র���গ্রাম বেছে নি���",
       selectDepartment: "আপনার বিভাগ বেছে নিন",
       programInfo: "প্রোগ���রামের ��থ্য",
-      costBreakdown: "খরচের বিভাজন",
-      waiverCalculator: "���ওক��ফ ক্যালকুলেটর",
-      academicInfo: "একাডেমিক তথ্য",
+      costBreakdown: "খরচ���র বিভাজন",
+      waiverCalculator: "���ওক��ফ ক���যালকুলেটর",
+      academicInfo: "একাডেমিক তথ্���",
       sscGPA: "এসএসসি জিপিএ",
       hscGPA: "����ই���এসসি জিপিএ",
       fourthSubject: "এসএস����ি ও এই��এসসি উভয়েই ���র্থ ব��ষয় ছিল",
@@ -348,7 +360,7 @@ export default function ProgramSelection() {
       originalAmount: "মূল পরিমাণ",
       waiverAmount: "���ওকুফ পর��মাণ",
       finalAmount: "চূড়��ন্ত পরিম��ণ",
-      admissionFee: "ভর্তি ফি",
+      admissionFee: "ভ��্তি ফি",
       courseFee: "কোর্স ফি",
       labFee: "ল্যাব ফি",
       others: "অন্যান���য",
@@ -361,12 +373,12 @@ export default function ProgramSelection() {
       selectProgramFirst: "প্রথমে একটি প্রো�����রাম নির্ব��চ�� করুন",
       selectDepartmentFirst: "প্রথ���ে একটি ��িভাগ নির্বাচন করুন",
       enterGPAValues:
-        "যোগ্য মওকুফ ���েখতে আপনা�� এসএসসি এবং এইচএসসি জিপিএ লিখুন",
+        "যোগ্য মওকুফ ���েখতে আপনা��� এসএসসি এবং এইচএসসি জিপিএ লিখুন",
       waiverPolicyNote: "মওক��ফ নীতি বিশ্ববিদ্যালয়ের অনুমোদন সাপে��্ষে",
       costNote:
-        "অতিরি����্��� ফি ���বং বিশ্ববিদ্যালয়ের ���ীতির ভিত্তিত�� চূড়ান্ত খরচ পরিবর্তিত �����ে প���রে",
+        "অতিরি����্��� ফি ���বং বিশ্ববি���্যালয়ের ���ীতির ভিত্তিত�� চূড়ান্ত খরচ পরিবর্তিত �����ে প���রে",
       saving: "সেভ করা হচ্ছে...",
-      saved: "ড���টা সফল��াবে সেভ হয়েছে!",
+      saved: "ড�����া সফল��াবে সেভ হয়েছে!",
       saveError: "ডে���া সেভ করতে ব্যর্থ। আবার চেষ��টা করুন।",
 
       // Credit Transfer specific
@@ -400,26 +412,164 @@ export default function ProgramSelection() {
     }
   }, [selectedProgram, selectedDepartment]);
 
-  // Update cost calculation when program changes
+  // Update cost calculation when program or package or selected waivers change
   useEffect(() => {
-    if (selectedProgram) {
-      const program = getProgramById(selectedProgram);
-      if (program) {
-        // Only consider result-based (merit) waivers for applicant-facing cost calculation
-        const visibleSelected = selectedWaivers.filter(
-          (id) => getWaiverById(id)?.type === "result",
-        );
-        const calculation = calculateWaiverAmount(
-          program.costStructure.total,
-          visibleSelected,
-        );
-        setCostCalculation({
-          originalAmount: program.costStructure.total,
-          ...calculation,
-        });
+    // Determine base amount: prefer applied package total if available
+    const baseAmount = (() => {
+      if (appliedPackageId) {
+        const pkg = registrationPackages.find((p) => p.id === appliedPackageId);
+        if (pkg) return pkg.totalEstimated;
       }
+      if (selectedProgram) {
+        const program = getProgramById(selectedProgram);
+        if (program) return program.costStructure.total;
+      }
+      return 0;
+    })();
+
+    // Only consider result-based (merit) waivers for applicant-facing cost calculation
+    const visibleSelected = selectedWaivers.filter(
+      (id) => getWaiverById(id)?.type === "result",
+    );
+    const calculation = calculateWaiverAmount(baseAmount, visibleSelected);
+    setCostCalculation({ originalAmount: baseAmount, ...calculation });
+  }, [selectedProgram, selectedWaivers, appliedPackageId]);
+
+  // Auto-select and apply a registration package when user chooses campus/semester/program/department
+  useEffect(() => {
+    const findBestPackage = () => {
+      // Require all five fields: campus, semester type, semester, program and department
+      if (
+        !selectedCampus ||
+        !selectedSemesterType ||
+        !selectedSemester ||
+        !selectedProgram ||
+        !selectedDepartment
+      )
+        return null;
+
+      const dept = getDepartmentById(selectedDepartment);
+      const programLevel = selectedProgram; // e.g., 'bachelor' or 'masters'
+      const semesterToken = selectedSemester.toLowerCase();
+      const semesterType = selectedSemesterType;
+
+      // Narrow by term first (must include semester token)
+      const candidates = registrationPackages.filter((pkg) => {
+        return pkg.term && pkg.term.toLowerCase().includes(semesterToken);
+      });
+
+      if (candidates.length === 0) return null;
+
+      // Scoring function to pick best match
+      const scoreCandidate = (pkg: any) => {
+        let score = 0;
+        const pkgText = `${pkg.program} ${pkg.mode}`.toLowerCase();
+
+        // Exact term (including year) is valuable
+        if (
+          pkg.term &&
+          pkg.term.toLowerCase().includes(selectedSemester.toLowerCase())
+        )
+          score += 50;
+
+        // Department strong match
+        const deptIdToken = selectedDepartment.toLowerCase();
+        const deptNameToken = dept ? dept.name.toLowerCase() : "";
+        if (pkgText.includes(deptIdToken)) score += 100;
+        if (deptNameToken && pkgText.includes(deptNameToken)) score += 90;
+
+        // First word of department
+        const firstWord = deptNameToken.split(" ")[0];
+        if (firstWord && pkgText.includes(firstWord)) score += 40;
+
+        // Program level (bachelor/master)
+        const levelToken =
+          programLevel === "bachelor"
+            ? "bachelor"
+            : programLevel === "masters"
+              ? "master"
+              : programLevel;
+        if (
+          levelToken &&
+          (pkg.mode.toLowerCase().includes(levelToken) ||
+            pkg.program.toLowerCase().includes(levelToken))
+        )
+          score += 30;
+
+        // Semester type bonus
+        if (semesterType === "tri-semester") {
+          if (
+            pkg.mode.toLowerCase().includes("trimester") ||
+            pkg.program.toLowerCase().includes("trimester")
+          )
+            score += 20;
+        }
+
+        return score;
+      };
+
+      let best: any = null;
+      let bestScore = -1;
+      for (const c of candidates) {
+        const s = scoreCandidate(c);
+        if (s > bestScore) {
+          bestScore = s;
+          best = c;
+        }
+      }
+
+      return best;
+    };
+
+    try {
+      const pkg = findBestPackage();
+      if (pkg) {
+        if (appliedPackageId !== pkg.id) {
+          // auto-apply
+          const visibleSelected = selectedWaivers.filter(
+            (id) => getWaiverById(id)?.type === "result",
+          );
+          const calculation = calculateWaiverAmount(
+            pkg.totalEstimated,
+            visibleSelected,
+          );
+
+          updateApplicationData({
+            program: pkg.id,
+            totalCost: pkg.totalEstimated,
+            registrationPackageId: pkg.id,
+          });
+
+          setAppliedPackageId(pkg.id);
+          setCostCalculation({
+            originalAmount: pkg.totalEstimated,
+            ...calculation,
+          });
+
+          toast({
+            title: "Package selected",
+            description: `${pkg.program} has been preselected based on your choices.`,
+          });
+        }
+      } else {
+        // If no package matches, clear appliedPackageId and let program cost govern
+        if (appliedPackageId) {
+          setAppliedPackageId(null);
+          updateApplicationData({ registrationPackageId: null });
+        }
+      }
+    } catch (e) {
+      console.error("Auto-package selection error", e);
     }
-  }, [selectedProgram, selectedWaivers]);
+    // Intentionally include selectedWaivers so waiver recalculation occurs when waivers change
+  }, [
+    selectedCampus,
+    selectedSemester,
+    selectedSemesterType,
+    selectedProgram,
+    selectedDepartment,
+    selectedWaivers,
+  ]);
 
   // Calculate result-based waiver when GPA changes
   useEffect(() => {
@@ -651,7 +801,7 @@ export default function ProgramSelection() {
     // Perform fresh check after a small delay
     setTimeout(() => {
       try {
-        console.log("🚀 Starting eligibility check...");
+        console.log("���� Starting eligibility check...");
 
         const academicRecord = buildAcademicRecord();
         console.log("📝 Academic record built:", academicRecord);
@@ -2091,7 +2241,7 @@ export default function ProgramSelection() {
                           eligibilityResult.requiresAdmissionTest && (
                             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                               <h5 className="font-semibold text-blue-800 mb-3">
-                                �� Admit Card Generation
+                                ���� Admit Card Generation
                               </h5>
                               <p className="text-sm text-blue-700 mb-4">
                                 After completing your application, you'll need
@@ -2477,7 +2627,7 @@ export default function ProgramSelection() {
                           >
                             {isCheckingEligibility
                               ? "⏳ Checking..."
-                              : "🔍 Check Eligibility"}
+                              : "���� Check Eligibility"}
                           </Button>
                           <p className="text-sm text-gray-600 mt-2">
                             Verify if you meet the requirements for this program
@@ -2585,7 +2735,7 @@ export default function ProgramSelection() {
                             }
                           >
                             {isCheckingEligibility
-                              ? "⏳ Checking..."
+                              ? "�� Checking..."
                               : "🔍 Check Eligibility"}
                           </Button>
                           <p className="text-sm text-gray-600 mt-2">
@@ -2674,6 +2824,145 @@ export default function ProgramSelection() {
 
             {/* Right Column - Cost Breakdown */}
             <div className="space-y-6">
+              {/* Registration Packages Preview */}
+              <Card className="bg-white shadow-lg">
+                <CardHeader className="bg-indigo-50">
+                  <CardTitle className="font-poppins">
+                    Registration Packages
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Show a single selected package or a blank placeholder to avoid overwhelming applicants */}
+
+                  {appliedPackageId ? (
+                    (() => {
+                      const pkg = registrationPackages.find(
+                        (p) => p.id === appliedPackageId,
+                      );
+                      if (!pkg)
+                        return (
+                          <div className="p-6 text-center text-gray-500">
+                            Selected package not found.
+                          </div>
+                        );
+
+                      return (
+                        <div className="p-4 border rounded flex flex-col">
+                          <div className="flex-1">
+                            <div className="font-medium">{pkg.program}</div>
+                            <div className="text-sm text-gray-500">
+                              {pkg.term} • {pkg.mode}
+                            </div>
+                            <div className="text-sm mt-2">
+                              Credits: {pkg.credits} • Per Credit: ৳
+                              {pkg.perCredit.toLocaleString()}
+                            </div>
+                            <div className="text-sm">
+                              Admission Fee: ৳
+                              {pkg.admissionFee.toLocaleString()} • Fixed: ৳
+                              {pkg.fixedFees.toLocaleString()}
+                            </div>
+                          </div>
+
+                          <div className="mt-3 flex items-center justify-between">
+                            <div className="text-deep-plum font-semibold">
+                              Est: ৳{pkg.totalEstimated.toLocaleString()}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  // re-apply (idempotent)
+                                  const visibleSelected =
+                                    selectedWaivers.filter(
+                                      (id) =>
+                                        getWaiverById(id)?.type === "result",
+                                    );
+                                  const calculation = calculateWaiverAmount(
+                                    pkg.totalEstimated,
+                                    visibleSelected,
+                                  );
+                                  updateApplicationData({
+                                    program: pkg.id,
+                                    totalCost: pkg.totalEstimated,
+                                    registrationPackageId: pkg.id,
+                                  });
+                                  setCostCalculation({
+                                    originalAmount: pkg.totalEstimated,
+                                    ...calculation,
+                                  });
+                                  toast({
+                                    title: "Package applied",
+                                    description: `${pkg.program} applied to your application.`,
+                                  });
+                                }}
+                              >
+                                Apply
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  // clear applied package and revert to program cost
+                                  setAppliedPackageId(null);
+                                  updateApplicationData({
+                                    registrationPackageId: null,
+                                  });
+                                  const program = selectedProgram
+                                    ? getProgramById(selectedProgram)
+                                    : null;
+                                  if (program) {
+                                    const visibleSelected =
+                                      selectedWaivers.filter(
+                                        (id) =>
+                                          getWaiverById(id)?.type === "result",
+                                      );
+                                    const calculation = calculateWaiverAmount(
+                                      program.costStructure.total,
+                                      visibleSelected,
+                                    );
+                                    setCostCalculation({
+                                      originalAmount:
+                                        program.costStructure.total,
+                                      ...calculation,
+                                    });
+                                  } else {
+                                    setCostCalculation({
+                                      originalAmount: 0,
+                                      waiverAmount: 0,
+                                      waiverPercentage: 0,
+                                      finalAmount: 0,
+                                    });
+                                  }
+                                }}
+                              >
+                                Clear
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <div className="p-8 text-center text-gray-600">
+                      <div className="text-lg font-medium mb-2">
+                        No package selected
+                      </div>
+                      <div className="text-sm">
+                        Please select campus, semester type, semester, program
+                        and department on the left to see the recommended
+                        registration package.
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-3 text-sm text-gray-500">
+                    The system will suggest one package based on your
+                    selections. You may clear it to choose another.
+                  </div>
+                </CardContent>
+              </Card>
               {/* Cost Breakdown */}
               <Card className="bg-white shadow-lg">
                 <CardHeader className="bg-deep-plum text-white">
@@ -2683,82 +2972,180 @@ export default function ProgramSelection() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  {selectedProgramData ? (
+                  {selectedProgramData || appliedPackageId ? (
                     <div className="space-y-4">
-                      {/* Original Cost Breakdown */}
+                      {/* Package-aware Cost Breakdown */}
                       <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">
-                            {t.admissionFee}
-                          </span>
-                          <span className="font-medium">
-                            ৳
-                            {selectedProgramData.costStructure.admissionFee.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">{t.courseFee}</span>
-                          <span className="font-medium">
-                            ৳
-                            {selectedProgramData.costStructure.courseFee.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">{t.labFee}</span>
-                          <span className="font-medium">
-                            ৳
-                            {selectedProgramData.costStructure.labFee.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">{t.others}</span>
-                          <span className="font-medium">
-                            ৳
-                            {selectedProgramData.costStructure.others.toLocaleString()}
-                          </span>
-                        </div>
+                        {(() => {
+                          if (appliedPackageId) {
+                            const pkg = registrationPackages.find(
+                              (p) => p.id === appliedPackageId,
+                            );
+                            if (pkg) {
+                              const admissionFee = pkg.admissionFee || 0;
+                              const courseFee =
+                                (pkg.perCredit || 0) * (pkg.credits || 0);
+                              const others = pkg.fixedFees || 0;
+                              const original =
+                                pkg.totalEstimated ??
+                                admissionFee + courseFee + others;
+                              return (
+                                <>
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">
+                                      {t.admissionFee}
+                                    </span>
+                                    <span className="font-medium">
+                                      ৳{admissionFee.toLocaleString()}
+                                    </span>
+                                  </div>
 
-                        <Separator />
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">
+                                      {t.courseFee}
+                                    </span>
+                                    <span className="font-medium">
+                                      ৳{courseFee.toLocaleString()}
+                                    </span>
+                                  </div>
 
-                        <div className="flex justify-between font-semibold">
-                          <span className="text-deep-plum">
-                            {t.originalAmount}
-                          </span>
-                          <span className="text-deep-plum">
-                            ৳{costCalculation.originalAmount.toLocaleString()}
-                          </span>
-                        </div>
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">
+                                      {t.others}
+                                    </span>
+                                    <span className="font-medium">
+                                      ৳{others.toLocaleString()}
+                                    </span>
+                                  </div>
 
-                        {/* Waiver Amount */}
-                        {costCalculation.waiverAmount > 0 && (
-                          <>
-                            <div className="flex justify-between text-green-600 font-medium">
-                              <span>
-                                {t.waiverAmount} (
-                                {costCalculation.waiverPercentage}%)
-                              </span>
-                              <span>
-                                -৳
-                                {costCalculation.waiverAmount.toLocaleString()}
-                              </span>
-                            </div>
+                                  <Separator />
 
-                            <Separator />
-                          </>
-                        )}
+                                  <div className="flex justify-between font-semibold">
+                                    <span className="text-deep-plum">
+                                      {t.originalAmount}
+                                    </span>
+                                    <span className="text-deep-plum">
+                                      ৳{original.toLocaleString()}
+                                    </span>
+                                  </div>
 
-                        {/* Final Amount */}
-                        <div className="flex justify-between text-xl font-bold">
-                          <span className="text-deep-plum">
-                            {t.finalAmount}
-                          </span>
-                          <span className="text-accent-purple">
-                            ৳{costCalculation.finalAmount.toLocaleString()}
-                          </span>
-                        </div>
+                                  {costCalculation.waiverAmount > 0 && (
+                                    <>
+                                      <div className="flex justify-between text-green-600 font-medium">
+                                        <span>
+                                          {t.waiverAmount} (
+                                          {costCalculation.waiverPercentage}%)
+                                        </span>
+                                        <span>
+                                          -৳
+                                          {costCalculation.waiverAmount.toLocaleString()}
+                                        </span>
+                                      </div>
+
+                                      <Separator />
+                                    </>
+                                  )}
+
+                                  <div className="flex justify-between text-xl font-bold">
+                                    <span className="text-deep-plum">
+                                      {t.finalAmount}
+                                    </span>
+                                    <span className="text-accent-purple">
+                                      ৳
+                                      {costCalculation.finalAmount.toLocaleString()}
+                                    </span>
+                                  </div>
+                                </>
+                              );
+                            }
+                          }
+
+                          if (selectedProgramData) {
+                            const cs = selectedProgramData.costStructure;
+                            return (
+                              <>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">
+                                    {t.admissionFee}
+                                  </span>
+                                  <span className="font-medium">
+                                    ৳{cs.admissionFee.toLocaleString()}
+                                  </span>
+                                </div>
+
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">
+                                    {t.courseFee}
+                                  </span>
+                                  <span className="font-medium">
+                                    ৳{cs.courseFee.toLocaleString()}
+                                  </span>
+                                </div>
+
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">
+                                    {t.labFee}
+                                  </span>
+                                  <span className="font-medium">
+                                    ৳{cs.labFee.toLocaleString()}
+                                  </span>
+                                </div>
+
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">
+                                    {t.others}
+                                  </span>
+                                  <span className="font-medium">
+                                    ৳{cs.others.toLocaleString()}
+                                  </span>
+                                </div>
+
+                                <Separator />
+
+                                <div className="flex justify-between font-semibold">
+                                  <span className="text-deep-plum">
+                                    {t.originalAmount}
+                                  </span>
+                                  <span className="text-deep-plum">
+                                    ৳
+                                    {costCalculation.originalAmount.toLocaleString()}
+                                  </span>
+                                </div>
+
+                                {costCalculation.waiverAmount > 0 && (
+                                  <>
+                                    <div className="flex justify-between text-green-600 font-medium">
+                                      <span>
+                                        {t.waiverAmount} (
+                                        {costCalculation.waiverPercentage}%)
+                                      </span>
+                                      <span>
+                                        -৳
+                                        {costCalculation.waiverAmount.toLocaleString()}
+                                      </span>
+                                    </div>
+
+                                    <Separator />
+                                  </>
+                                )}
+
+                                <div className="flex justify-between text-xl font-bold">
+                                  <span className="text-deep-plum">
+                                    {t.finalAmount}
+                                  </span>
+                                  <span className="text-accent-purple">
+                                    ৳
+                                    {costCalculation.finalAmount.toLocaleString()}
+                                  </span>
+                                </div>
+                              </>
+                            );
+                          }
+
+                          return null;
+                        })()}
                       </div>
 
-                      {/* Savings Display */}
                       {costCalculation.waiverAmount > 0 && (
                         <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
                           <div className="flex items-center gap-2 text-green-800">
@@ -2842,7 +3229,7 @@ export default function ProgramSelection() {
                   <p>📝 Please complete your academic information</p>
                 ) : !eligibilityChecked ? (
                   <p>
-                    🔍 Please click "Check Eligibility" button to verify
+                    ���� Please click "Check Eligibility" button to verify
                     requirements
                   </p>
                 ) : eligibilityResult && !eligibilityResult.isEligible ? (

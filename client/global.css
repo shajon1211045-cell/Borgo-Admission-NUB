@@ -119,3 +119,13 @@
     @apply font-inter;
   }
 }
+
+/* Hero background image class (converted from inline style) */
+@layer components {
+  .hero-bg {
+    background-image: url('https://cdn.builder.io/api/v1/image/assets%2F9dbc4a4b9eb644b2b362ca2494d596c9%2Fefcd82a2ea5142d2bf6c77bf87aafdb7?format=webp&width=1200');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}

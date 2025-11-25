@@ -80,7 +80,7 @@ export default function Index() {
       heroSubtitle:
         "নর্দার্ন ইউনিভার্সিটি বাংলাদেশে যোগ দিন - যেখানে উৎকর্ষতা সুযোগের সাথে মিলিত হয়",
       heroDescription:
-        "মাত্র ৫টি সহজ ধাপে আপনার অনলাইন ভর্তি প্রক্রিয়া শুরু করুন। আমাদের সুবিধাজনক স��স্টেম ���পনার স্বপ্নের প্রোগ্রামে আবেদন করা সহজ করে তোলে।",
+        "মাত্র ৫টি সহজ ধাপে আপনার ���নলাইন ভর্তি প্রক্রিয়া শুরু করুন। আমাদের সুবিধাজনক স��স্টেম ���পনার স্বপ্নের প্রোগ্রামে আবেদন করা সহজ করে তোলে।",
       startJourney: "আপনার যাত্রা শুরু করুন",
       uploadOffline: "অফ���াইন আবেদন আপলোড করুন",
       admissionProcess: "সহজ ৪-ধাপের ভর্তি প্রক্রিয়া",
@@ -88,9 +88,10 @@ export default function Index() {
       creditTransfer: "ক্রেডিট ট্রান্সফার",
       regularAdmissionDesc:
         "স্নাতক এবং স্নাতকোত্তর প্রোগ্রামের জন্য আবেদন করু��",
-      creditTransferDesc: "অন্��� প্রতিষ্ঠান থেকে আপনার ক্রেডিট স্থানান্তর করুন",
+      creditTransferDesc:
+        "অন্��� প্রতিষ্ঠান থেকে আপনার ক্রেডিট স্থানান্তর করুন",
       step1: "প্রোগ্রাম নির্বাচন ও খরচ গণনা",
-      step1Desc: "প্রোগ্রাম, বিভাগ নির্বাচন এবং উপলব্ধ মওকুফ দেখুন",
+      step1Desc: "প্রোগ্রাম, বিভাগ নির্বাচন এবং উপলব্ধ মওকুফ ���েখুন",
       step2: "ব্যক্তিগত তথ্য",
       step2Desc: "আপনার ব্যক্তিগত তথ্য পূরণ করুন",
       step3: "শিক্ষাগত ইতিহাস",
@@ -104,10 +105,10 @@ export default function Index() {
       modernFacilities: "আধুনিক সুবিধা",
       modernFacilitiesDesc: "অত্যাধুনিক ল্যাব এবং শিক্ষার পরিবেশ",
       careerSupport: "ক্যারিয়ার সাপোর্ট",
-      careerSupportDesc: "নিবেদিত চাকরির সহায়তা এবং ক্যারিয়ার গাইডেন্স",
+      careerSupportDesc: "নিবেদিত চাকরির সহায়তা এ��ং ক্যারিয়ার গাইডেন্স",
       affordableEducation: "সাশ্রয়ী শিক্ষা",
       affordableEducationDesc: "বিভিন্ন বৃত্তির সুযোগ সহ মানসম্পন্ন শিক্ষা",
-      waiverHighlights: "বৃত্তি ও মওকুফের সুযোগ",
+      waiverHighlights: "বৃত্তি ও মওকুফের সুযো���",
       meritBased: "মেধাভিত্তিক বৃত্তি",
       meritBasedDesc: "এসএসসি ও এইচএসসি ফলাফলের ভিত্তিতে ১০০% পর্যন্ত মওকুফ",
       specialWaivers: "বিশেষ মওকুফ উপলব্ধ",
@@ -130,6 +131,7 @@ export default function Index() {
   const t = texts[language];
 
   const [programs, setPrograms] = useState<any[]>([]);
+  const [registrationPkgs, setRegistrationPkgs] = useState<any[]>([]);
   const [programsLoading, setProgramsLoading] = useState(false);
   const [programsError, setProgramsError] = useState<string | null>(null);
 
@@ -149,9 +151,20 @@ export default function Index() {
       } finally {
         if (mounted) setProgramsLoading(false);
       }
+
+      // load registration packages
+      try {
+        const rp = await apiClient.getRegistrationPackages();
+        if (rp.success && rp.data)
+          setRegistrationPkgs(Array.isArray(rp.data) ? rp.data : []);
+      } catch (e) {
+        console.warn("Failed to load registration packages", e);
+      }
     };
     fetchPrograms();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const admissionSteps = [
@@ -225,10 +238,8 @@ export default function Index() {
       <section className="relative overflow-hidden py-20 lg:py-32 bg-gradient-to-br from-deep-plum via-accent-purple to-pink-accent">
         {/* Background Image */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('https://cdn.builder.io/api/v1/image/assets%2F9dbc4a4b9eb644b2b362ca2494d596c9%2Fefcd82a2ea5142d2bf6c77bf87aafdb7?format=webp&width=1200')`,
-          }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat hero-bg"
+          aria-hidden="true"
         ></div>
 
         {/* Gradient Overlay for better text readability */}
@@ -310,6 +321,7 @@ export default function Index() {
                       variant="outline"
                       size="lg"
                       className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-deep-plum text-lg px-8 py-4"
+                      aria-label="Upload offline admission application"
                     >
                       <Upload className="w-5 h-5 mr-2" />
                       Offline Admission
@@ -322,7 +334,9 @@ export default function Index() {
             {/* Programs Preview - fetched from API */}
             <div className="w-full">
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white/90">Popular Programs</h3>
+                <h3 className="text-lg font-semibold text-white/90">
+                  Popular Programs
+                </h3>
               </div>
 
               {programsLoading && (
@@ -335,28 +349,76 @@ export default function Index() {
 
               {!programsLoading && !programsError && programs.length > 0 && (
                 <div className="grid grid-cols-1 gap-4">
-                  {programs.slice(0, 4).map((program: any) => {
+                  {programs.slice(0, 3).map((program: any) => {
                     const code = program.code || program.program_code;
-                    const dept = program.department_code || program.department?.code || "";
-                    const shortDesc = program.short_description || program.description || program.department_name || "A leading program with strong industry ties.";
+                    const dept =
+                      program.department_code || program.department?.code || "";
+                    const shortDesc =
+                      program.short_description ||
+                      program.description ||
+                      program.department_name ||
+                      "A leading program with strong industry ties.";
                     return (
-                      <Card key={code} className="bg-white/10 backdrop-blur-lg border-white/20 text-white">
+                      <Card
+                        key={code}
+                        className="bg-white/10 backdrop-blur-lg border-white/20 text-white"
+                      >
                         <CardContent className="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between">
                           <div>
-                            <div className="font-bold text-lg">{program.name || program.program_name}</div>
-                            <div className="text-sm text-white/80">Code: {code} • {program.duration ?? program.duration_years}</div>
-                            <div className="text-sm text-white/80">{shortDesc}</div>
+                            <div className="font-bold text-lg">
+                              {program.name || program.program_name}
+                            </div>
+                            <div className="text-sm text-white/80">
+                              Code: {code} •{" "}
+                              {program.duration ?? program.duration_years}
+                            </div>
+                            <div className="text-sm text-white/80">
+                              {shortDesc}
+                            </div>
                           </div>
 
                           <div className="mt-4 md:mt-0 flex items-center gap-4">
-                            <Link to={`/program-selection?program=${encodeURIComponent(code)}&department=${encodeURIComponent(dept)}`}>
-                              <Button size="sm">Apply</Button>
+                            <Link
+                              to={`/program-selection?program=${encodeURIComponent(code)}&department=${encodeURIComponent(dept)}`}
+                            >
+                              <Button
+                                size="sm"
+                                aria-label={`Apply to ${program.name || program.program_name}`}
+                              >
+                                Apply
+                              </Button>
                             </Link>
                           </div>
                         </CardContent>
                       </Card>
                     );
                   })}
+
+                  {/* Registration packages preview */}
+                  {registrationPkgs.slice(0, 2).map((pkg: any) => (
+                    <Card
+                      key={pkg.id}
+                      className="bg-white/10 backdrop-blur-lg border-white/20 text-white"
+                    >
+                      <CardContent className="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between">
+                        <div>
+                          <div className="font-bold text-lg">{pkg.program}</div>
+                          <div className="text-sm text-white/80">
+                            {pkg.term} • {pkg.mode}
+                          </div>
+                          <div className="text-sm text-white/80">
+                            Credits: {pkg.credits} • Per Credit: ৳
+                            {pkg.perCredit.toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="mt-4 md:mt-0 flex items-center gap-4">
+                          <Link to="/program-selection">
+                            <Button size="sm">View Packages</Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </div>

@@ -26,7 +26,16 @@ export default function MessagingTemplates() {
   const load = async () => {
     setLoading(true);
     const res: any = await apiClient.getTemplates();
-    if (res && res.success) setTemplates(res.data || []);
+    if (res && res.success) {
+      const data = res.data;
+      if (Array.isArray(data)) {
+        setTemplates(data);
+      } else if (data && Array.isArray((data as any).templates)) {
+        setTemplates((data as any).templates);
+      } else {
+        setTemplates([]);
+      }
+    }
     setLoading(false);
   };
 

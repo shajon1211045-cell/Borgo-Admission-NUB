@@ -175,8 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ]);
     else if (r === "finance_officer")
       setPermissions(["finance:view", "finance:billing"]);
-    else if (r === "offline_officer")
-      setPermissions([]);
+    else if (r === "offline_officer") setPermissions([]);
     else setPermissions([]);
   };
 
@@ -205,7 +204,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    console.warn(
+      "useAuth called outside AuthProvider — returning fallback values",
+    );
+    // Provide safe defaults to prevent app crash during demo/partial mounting
+    return {
+      user: null,
+      userType: "public",
+      role: null,
+      permissions: [],
+      setRole: () => {},
+      setPermissions: () => {},
+      isAllowed: () => false,
+      login: async () => false,
+      logout: () => {},
+      isLoading: false,
+      isAuthenticated: false,
+      signInAs: () => {},
+    } as AuthContextType;
   }
   return context;
 }
